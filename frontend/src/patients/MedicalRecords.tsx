@@ -1,6 +1,4 @@
 export {};
-import React from "react";
-
 const Icon = ({
   name,
   size = 20,
@@ -157,7 +155,7 @@ const MedicalRecordCard = ({
           : "border-[#dce3ed]"
       }`}
     >
-      <div className="flex items-center justify-between gap-6">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center gap-5">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e1f5ff] text-[#0aa89d]">
             <Icon name="file" size={22} />
@@ -187,7 +185,7 @@ const MedicalRecordCard = ({
 
       {expanded && (
         <div className="mt-5 border-t border-[#dce3ed] pt-5">
-          <div className="grid grid-cols-[1.15fr_0.75fr] gap-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.15fr_0.75fr]">
             <div className="rounded-xl bg-[#f7f9fb] px-5 py-5">
               <h4 className="text-[15px] font-extrabold text-[#102349]">
                 Active Rx (Prescribed Medications)
@@ -246,7 +244,7 @@ function MedicalRecords() {
     <div className="min-h-screen bg-[#f7f9fc] font-['Outfit'] text-[#102349]">
       <div className="flex min-h-screen">
         {/* SIDEBAR */}
-        <aside className="fixed left-0 top-0 z-20 flex h-screen w-[260px] flex-col bg-[#091c42] px-6 py-6">
+        <aside className="fixed left-0 top-0 z-20 hidden h-screen w-[260px] flex-col bg-[#091c42] px-6 py-6 lg:flex">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0da69a] text-white">
@@ -291,16 +289,16 @@ function MedicalRecords() {
         </aside>
 
         {/* MAIN AREA */}
-        <main className="ml-[260px] min-h-screen flex-1">
+        <main className="ml-0 min-h-screen flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
           {/* TOP HEADER */}
-          <header className="flex h-[80px] items-center border-b border-[#dce3ed] bg-white px-10">
+          <header className="flex h-[80px] items-center border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:px-10">
             <h1 className="text-[25px] font-extrabold text-[#102349]">
               Medical Records
             </h1>
 
             <div className="ml-auto flex items-center gap-8">
               {/* Search */}
-              <div className="flex h-[38px] w-[280px] items-center gap-3 rounded-xl bg-[#f6f8fb] px-4 text-[#71819f]">
+              <div className="hidden h-[38px] w-[280px] items-center gap-3 rounded-xl bg-[#f6f8fb] px-4 text-[#71819f] md:flex">
                 <Icon name="search" size={18} />
 
                 <span className="text-[14px]">
@@ -317,14 +315,14 @@ function MedicalRecords() {
                 </span>
               </div>
 
-              <div className="text-[14px] font-extrabold text-[#102349]">
+              <div className="hidden text-[14px] font-extrabold text-[#102349] sm:block">
                 Ananya Patel
               </div>
             </div>
           </header>
 
           {/* CONTENT */}
-          <section className="px-10 py-10">
+          <section className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
             {/* Page Heading */}
             <div className="flex items-start justify-between">
               <div>

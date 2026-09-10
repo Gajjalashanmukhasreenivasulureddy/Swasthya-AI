@@ -1,5 +1,6 @@
 export {};
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Icon({
   name,
@@ -167,7 +168,7 @@ function SidebarItem({
 
 function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 flex h-screen w-[260px] flex-col bg-[#0b1d40] px-6 py-6">
+    <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col bg-[#0b1d40] px-6 py-6 lg:flex">
       <Logo />
 
       <nav className="mt-8 flex flex-col gap-2">
@@ -203,13 +204,13 @@ function Sidebar() {
 
 function Header() {
   return (
-    <header className="fixed left-[260px] right-0 top-0 z-10 flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-10">
+    <header className="fixed inset-x-0 top-0 z-10 flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:left-[260px] lg:right-0 lg:px-10">
       <h1 className="text-[25px] font-extrabold tracking-[-0.5px] text-[#102349]">
         AI Symptom Assistant
       </h1>
 
-      <div className="flex items-center gap-8">
-        <div className="flex h-[38px] w-[293px] items-center gap-3 rounded-xl bg-[#f6f8fb] px-4 text-[#71819c]">
+      <div className="flex items-center gap-4 sm:gap-8">
+        <div className="hidden h-[38px] w-[293px] items-center gap-3 rounded-xl bg-[#f6f8fb] px-4 text-[#71819c] md:flex">
           <Icon name="search" size={18} />
 
           <span className="text-[14px]">
@@ -225,7 +226,7 @@ function Header() {
           </span>
         </div>
 
-        <div className="text-[14px] font-extrabold text-[#102349]">
+        <div className="hidden text-[14px] font-extrabold text-[#102349] sm:block">
           Ananya Patel
         </div>
       </div>
@@ -285,6 +286,7 @@ function RoadmapStep({
 
 export default function AICaseTaking() {
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const quickSelect = (text: string) => {
     setMessage(text);
@@ -296,10 +298,10 @@ export default function AICaseTaking() {
 
       <Header />
 
-      <main className="ml-[260px] pt-[80px]">
-        <div className="px-10 py-10">
+      <main className="ml-0 pt-[80px] lg:ml-[260px]">
+        <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
           {/* Progress Header */}
-          <section className="flex min-h-[98px] items-center justify-between rounded-xl border border-[#dce3ed] bg-white px-6">
+          <section className="flex min-h-[98px] flex-col items-start justify-between gap-5 rounded-xl border border-[#dce3ed] bg-white px-5 py-5 sm:flex-row sm:items-center sm:px-6 sm:py-0">
             <div>
               <div className="text-[13px] font-extrabold tracking-[0.02em] text-[#0d9f94]">
                 INTAKE QUESTIONNAIRE
@@ -310,7 +312,7 @@ export default function AICaseTaking() {
               </h2>
             </div>
 
-            <div className="w-[240px]">
+            <div className="w-full sm:w-[240px]">
               <div className="mb-2 text-right text-[13px] font-medium text-[#687b99]">
                 Progress: Step 3 of 6 (45%)
               </div>
@@ -322,7 +324,7 @@ export default function AICaseTaking() {
           </section>
 
           {/* Main Content */}
-          <div className="mt-8 grid grid-cols-[minmax(0,1fr)_340px] gap-8">
+          <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
             {/* Conversation */}
             <section className="flex min-h-[520px] flex-col rounded-xl border border-[#dce3ed] bg-white p-6">
               <div className="flex-1">
@@ -377,7 +379,7 @@ export default function AICaseTaking() {
 
               {/* Input Area */}
               <div className="mt-6 rounded-xl border border-[#dce3ed] p-4">
-                <div className="mb-4 flex items-center gap-3">
+                <div className="mb-4 flex flex-wrap items-center gap-3">
                   <span className="text-[12px] font-extrabold text-[#71819c]">
                     Quick Select:
                   </span>
@@ -407,7 +409,7 @@ export default function AICaseTaking() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <input
                     type="text"
                     value={message}
@@ -425,6 +427,7 @@ export default function AICaseTaking() {
 
                   <button
                     type="button"
+                    onClick={() => navigate("/patient/upload-reports")}
                     className="h-[50px] rounded-lg bg-[#0b1d40] px-7 text-[14px] font-extrabold text-white"
                   >
                     Submit

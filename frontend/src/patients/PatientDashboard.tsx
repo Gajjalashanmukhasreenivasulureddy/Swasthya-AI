@@ -1,5 +1,6 @@
 export {};
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 type IconProps = {
   size?: number;
@@ -189,6 +190,7 @@ const StatCard = ({
 );
 
 function PatientDashboard() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
       <div className="flex min-h-screen">
@@ -214,6 +216,7 @@ function PatientDashboard() {
           <nav className="flex flex-col gap-1 px-6">
             <button
               type="button"
+              onClick={() => navigate("/patient/dashboard")}
               className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"
             >
               <HomeIcon size={20} />
@@ -222,6 +225,7 @@ function PatientDashboard() {
 
             <button
               type="button"
+              onClick={() => navigate("/patient/case-taking")}
               className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
             >
               <PlusIcon size={20} />
@@ -230,6 +234,7 @@ function PatientDashboard() {
 
             <button
               type="button"
+              onClick={() => navigate("/patient/dashboard")}
               className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
             >
               <CalendarIcon size={20} />
@@ -238,6 +243,7 @@ function PatientDashboard() {
 
             <button
               type="button"
+              onClick={() => navigate("/patient/medical-records")}
               className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
             >
               <RecordsIcon size={20} />
@@ -246,6 +252,7 @@ function PatientDashboard() {
 
             <button
               type="button"
+              onClick={() => navigate("/patient/dashboard")}
               className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
             >
               <ProfileIcon size={20} />
@@ -254,6 +261,7 @@ function PatientDashboard() {
 
             <button
               type="button"
+              onClick={() => navigate("/patient/dashboard")}
               className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
             >
               <SettingsIcon size={20} />
@@ -301,7 +309,7 @@ function PatientDashboard() {
 
         {/* MAIN CONTENT */}
 
-        <main className="min-w-0 flex-1 lg:ml-[248px]">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[248px] lg:pt-0">
           {/* HEADER */}
 
           <header className="flex h-[76px] items-center justify-between border-b border-[#dce4ef] bg-white px-6 sm:px-8 lg:px-10">
@@ -411,6 +419,7 @@ function PatientDashboard() {
 
                   <button
                     type="button"
+                    onClick={() => navigate("/patient/case-taking")}
                     className="min-h-[79px] rounded-lg bg-[#109f96] px-5 py-4 text-left text-white transition hover:bg-[#0b8d84]"
                   >
                     <p className="text-[15px] font-extrabold">
@@ -426,6 +435,7 @@ function PatientDashboard() {
 
                   <button
                     type="button"
+                    onClick={() => navigate("/patient/upload-reports")}
                     className="min-h-[79px] rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-5 py-4 text-left transition hover:bg-[#f1f5f9]"
                   >
                     <p className="text-[15px] font-extrabold text-[#102349]">

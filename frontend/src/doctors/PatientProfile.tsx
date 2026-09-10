@@ -123,13 +123,6 @@ const UserCircleIcon = ({ size = 82 }: IconProps) => (
   </svg>
 );
 
-const CheckCircleIcon = ({ size = 20 }: IconProps) => (
-  <Icon size={size}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="m8 12 2.5 2.5L16 9" />
-  </Icon>
-);
-
 /* ───────────────── LOGO ───────────────── */
 
 const LogoIcon = () => (
@@ -296,7 +289,7 @@ function PatientProfile() {
 
         {/* ───────────────── MAIN ───────────────── */}
 
-        <main className="min-w-0 flex-1 lg:ml-[260px]">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
 
           {/* HEADER */}
 

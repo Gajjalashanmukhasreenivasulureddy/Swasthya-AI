@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LandingPage from "./components/LandingPage";
+import RoleSelection from "./components/RoleSelection";
 
+import DoctorLogin from "./doctors/DoctorLogin";
 import DoctorDashboard from "./doctors/DoctorDashboard";
 import PatientQueue from "./doctors/PatientQueue";
 import PatientProfile from "./doctors/PatientProfile";
@@ -9,6 +11,7 @@ import AICaseSheet from "./doctors/AICaseSheet";
 import DoctorSchedule from "./doctors/DoctorSchedule";
 
 import PatientDashboard from "./patients/PatientDashboard";
+import PatientLogin from "./patients/PatientLogin";
 import AICaseTaking from "./patients/AICaseTaking";
 import UploadReports from "./patients/UploadReports";
 import CaseReview from "./patients/CaseReview";
@@ -20,8 +23,10 @@ function App() {
       <Routes>
         {/* Landing */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/role-selection" element={<RoleSelection />} />
 
         {/* Doctor */}
+        <Route path="/doctor-login" element={<DoctorLogin />} />
         <Route
           path="/doctor/dashboard"
           element={<DoctorDashboard />}
@@ -48,6 +53,7 @@ function App() {
         />
 
         {/* Patient */}
+        <Route path="/patient-login" element={<PatientLogin />} />
         <Route
           path="/patient/dashboard"
           element={<PatientDashboard />}

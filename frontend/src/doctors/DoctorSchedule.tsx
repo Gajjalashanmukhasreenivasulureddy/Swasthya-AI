@@ -312,7 +312,7 @@ function DoctorSchedule() {
 
         {/* MAIN */}
 
-        <main className="min-w-0 flex-1 lg:ml-[260px]">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
 
           {/* TOP HEADER */}
 

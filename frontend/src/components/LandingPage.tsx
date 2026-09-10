@@ -1,5 +1,6 @@
 export {};
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type IconName =
   | "user"
@@ -340,6 +341,7 @@ function CaseSheetPreview() {
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const scrollToSection = (id: string) => {
     setMobileMenuOpen(false);
@@ -402,14 +404,14 @@ export default function LandingPage() {
 
           <div className="hidden items-center gap-5 md:flex">
             <button
-              onClick={() => scrollToSection("role-selection")}
+              onClick={() => navigate("/role-selection")}
               className="text-[11px] font-semibold text-[#102349] transition hover:text-[#07998e]"
             >
               Login
             </button>
 
             <button
-              onClick={() => scrollToSection("role-selection")}
+              onClick={() => navigate("/role-selection")}
               className="rounded-lg bg-[#0b998e] px-5 py-2.5 text-[10px] font-bold text-white shadow-sm transition hover:bg-[#07877e]"
             >
               Get Started
@@ -439,7 +441,11 @@ export default function LandingPage() {
               ].map(([label, id]) => (
                 <button
                   key={id}
-                  onClick={() => scrollToSection(id)}
+                  onClick={() =>
+                    id === "role-selection"
+                      ? navigate("/role-selection")
+                      : scrollToSection(id)
+                  }
                   className="text-left text-sm font-medium text-[#51637f]"
                 >
                   {label}
@@ -476,7 +482,7 @@ export default function LandingPage() {
 
             <div className="mt-7 flex flex-wrap gap-3">
               <button
-                onClick={() => scrollToSection("role-selection")}
+                onClick={() => navigate("/role-selection")}
                 className="flex items-center gap-2 rounded-lg bg-[#0b9b90] px-6 py-3 text-[10px] font-bold text-white shadow-sm transition hover:bg-[#07877e]"
               >
                 Start Free Case-Taking
@@ -785,7 +791,6 @@ export default function LandingPage() {
           ROLE SELECTION PLACEHOLDER
           This ID allows Get Started / Login navigation to work now.
       ========================================================== */}
-      <div id="role-selection" className="hidden" />
     </main>
   );
 }
