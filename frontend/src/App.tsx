@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LandingPage from "./components/LandingPage";
+import AboutPage from "./components/AboutPage";
 import RoleSelection from "./components/RoleSelection";
 
 import DoctorLogin from "./doctors/DoctorLogin";
@@ -23,6 +24,7 @@ function App() {
       <Routes>
         {/* Landing */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/role-selection" element={<RoleSelection />} />
 
         {/* Doctor */}
