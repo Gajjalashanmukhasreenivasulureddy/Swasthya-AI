@@ -1,7 +1,86 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import LandingPage from "./components/LandingPage";
 
+import DoctorDashboard from "./doctors/DoctorDashboard";
+import PatientQueue from "./doctors/PatientQueue";
+import PatientProfile from "./doctors/PatientProfile";
+import AICaseSheet from "./doctors/AICaseSheet";
+import DoctorSchedule from "./doctors/DoctorSchedule";
+
+import PatientDashboard from "./patients/PatientDashboard";
+import AICaseTaking from "./patients/AICaseTaking";
+import UploadReports from "./patients/UploadReports";
+import CaseReview from "./patients/CaseReview";
+import MedicalRecords from "./patients/MedicalRecords";
+
 function App() {
-  return <LandingPage />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Landing */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Doctor */}
+        <Route
+          path="/doctor/dashboard"
+          element={<DoctorDashboard />}
+        />
+
+        <Route
+          path="/doctor/patients"
+          element={<PatientProfile />}
+        />
+
+        <Route
+          path="/doctor/queue"
+          element={<PatientQueue />}
+        />
+
+        <Route
+          path="/doctor/schedule"
+          element={<DoctorSchedule />}
+        />
+
+        <Route
+          path="/doctor/case-sheet"
+          element={<AICaseSheet />}
+        />
+
+        {/* Patient */}
+        <Route
+          path="/patient/dashboard"
+          element={<PatientDashboard />}
+        />
+
+        <Route
+          path="/patient/case-taking"
+          element={<AICaseTaking />}
+        />
+
+        <Route
+          path="/patient/upload-reports"
+          element={<UploadReports />}
+        />
+
+        <Route
+          path="/patient/case-review"
+          element={<CaseReview />}
+        />
+
+        <Route
+          path="/patient/medical-records"
+          element={<MedicalRecords />}
+        />
+
+        {/* Unknown URL */}
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
