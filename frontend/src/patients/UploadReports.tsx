@@ -1,7 +1,9 @@
 export {};
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function UploadReports() {
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [files, setFiles] = useState([
@@ -63,7 +65,7 @@ function UploadReports() {
     <div className="min-h-screen bg-[#f7f9fc] text-[#102349]">
 
       {/* ================= SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 z-20 flex h-screen w-[260px] flex-col bg-[#0b1d41] text-white">
+      <aside className="fixed left-0 top-0 z-20 hidden h-screen w-[260px] flex-col bg-[#0b1d41] text-white lg:flex">
 
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-6">
@@ -144,19 +146,19 @@ function UploadReports() {
 
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="ml-[260px] min-h-screen">
+      <main className="ml-0 min-h-screen lg:ml-[260px]">
 
         {/* Header */}
-        <header className="flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-10">
+        <header className="flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:px-10">
 
           <h1 className="text-[25px] font-extrabold tracking-[-0.5px]">
             Medical Records Sync
           </h1>
 
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 sm:gap-8">
 
             {/* Search */}
-            <div className="flex h-[38px] w-[280px] items-center gap-3 rounded-[9px] bg-[#f6f8fb] px-4 text-[#71819a]">
+            <div className="hidden h-[38px] w-[280px] items-center gap-3 rounded-[9px] bg-[#f6f8fb] px-4 text-[#71819a] md:flex">
               <span className="text-[18px]">
                 ⌕
               </span>
@@ -175,7 +177,7 @@ function UploadReports() {
               </span>
             </div>
 
-            <span className="text-[14px] font-bold">
+            <span className="hidden text-[14px] font-bold sm:block">
               Ananya Patel
             </span>
 
@@ -185,7 +187,7 @@ function UploadReports() {
 
 
         {/* ================= PAGE CONTENT ================= */}
-        <section className="px-10 pb-10 pt-10">
+        <section className="px-4 pb-8 pt-6 sm:px-6 sm:pb-10 sm:pt-8 lg:px-10 lg:pt-10">
 
           {/* Heading */}
           <div className="mb-7">
@@ -368,11 +370,11 @@ function UploadReports() {
               {/* Actions */}
               <div className="mt-6 space-y-3">
 
-                <button className="flex h-[51px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
+                <button onClick={() => navigate("/patient/case-review")} className="flex h-[51px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
                   Continue to Review
                 </button>
 
-                <button className="flex h-[51px] w-full items-center justify-center rounded-[8px] border border-[#dce3ed] bg-white text-[15px] font-bold text-[#102349] transition hover:bg-[#f7f9fc]">
+                <button onClick={() => navigate("/patient/case-taking")} className="flex h-[51px] w-full items-center justify-center rounded-[8px] border border-[#dce3ed] bg-white text-[15px] font-bold text-[#102349] transition hover:bg-[#f7f9fc]">
                   Back to Case Intake
                 </button>
 

@@ -1,5 +1,6 @@
 export {};
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 type IconProps = {
   size?: number;
@@ -254,6 +255,7 @@ const StatusBadge = ({
 );
 
 function DoctorDashboard() {
+  const navigate = useNavigate();
   const navItems: NavItem[] = [
     {
       label: "Dashboard",
@@ -311,6 +313,18 @@ function DoctorDashboard() {
                 <button
                   key={item.label}
                   type="button"
+                  onClick={() =>
+                    navigate(
+                      {
+                        Dashboard: "/doctor/dashboard",
+                        Patients: "/doctor/patients",
+                        Queue: "/doctor/queue",
+                        Schedule: "/doctor/schedule",
+                        Reports: "/doctor/case-sheet",
+                        Settings: "/doctor/dashboard",
+                      }[item.label] ?? "/doctor/dashboard",
+                    )
+                  }
                   className={`flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left transition ${
                     active
                       ? "bg-[#109f96] text-white"
@@ -367,7 +381,7 @@ function DoctorDashboard() {
 
         {/* ───────────────── MAIN AREA ───────────────── */}
 
-        <main className="min-w-0 flex-1 lg:ml-[260px]">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
           {/* Top header */}
           <header className="flex h-[80px] items-center justify-between border-b border-[#dce4ef] bg-white px-6 sm:px-8 lg:px-10">
             <h2 className="text-[25px] font-extrabold tracking-[-0.02em] text-[#102349]">
@@ -476,6 +490,7 @@ function DoctorDashboard() {
 
                   <button
                     type="button"
+                    onClick={() => navigate("/doctor/queue")}
                     className="flex items-center gap-1 text-[13px] font-bold text-[#009c91] hover:text-[#007f77]"
                   >
                     View Full Queue
@@ -526,6 +541,7 @@ function DoctorDashboard() {
                         <td className="px-4 py-4">
                           <button
                             type="button"
+                            onClick={() => navigate("/doctor/case-sheet")}
                             className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#142e5c]"
                           >
                             View Case
@@ -552,6 +568,7 @@ function DoctorDashboard() {
                         <td className="px-4 py-4">
                           <button
                             type="button"
+                            onClick={() => navigate("/doctor/case-sheet")}
                             className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#142e5c]"
                           >
                             View Case
@@ -578,6 +595,7 @@ function DoctorDashboard() {
                         <td className="px-4 py-4">
                           <button
                             type="button"
+                            onClick={() => navigate("/doctor/case-sheet")}
                             className="rounded-md bg-[#0f9f94] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#0b8a81]"
                           >
                             Start Consult
@@ -618,6 +636,7 @@ function DoctorDashboard() {
                   {/* Register patient */}
                   <button
                     type="button"
+                    onClick={() => navigate("/doctor/patients")}
                     className="flex h-[42px] w-full items-center gap-3 rounded-lg bg-[#c8f7ee] px-3.5 text-left text-[13px] font-bold text-[#078d84] transition hover:bg-[#b8f1e6]"
                   >
                     <PlusIcon size={19} />
@@ -627,6 +646,7 @@ function DoctorDashboard() {
                   {/* Schedule */}
                   <button
                     type="button"
+                    onClick={() => navigate("/doctor/schedule")}
                     className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-3.5 text-left text-[13px] font-bold text-[#102349] transition hover:bg-[#f1f5f9]"
                   >
                     <CalendarIcon size={18} />
@@ -636,6 +656,7 @@ function DoctorDashboard() {
                   {/* Pending cases */}
                   <button
                     type="button"
+                    onClick={() => navigate("/doctor/case-sheet")}
                     className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-3.5 text-left text-[13px] font-bold text-[#102349] transition hover:bg-[#f1f5f9]"
                   >
                     <ClipboardIcon size={18} />

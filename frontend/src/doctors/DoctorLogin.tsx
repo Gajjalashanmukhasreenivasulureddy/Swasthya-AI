@@ -2,41 +2,15 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import axios from 'axios';
-
-interface DoctorLoginResponse {
-  success: boolean;
-  message: string;
-}
-
 function DoctorLogin() {
   const navigate = useNavigate();
   const [medicalLicenseId, setMedicalLicenseId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const handleDoctorLogin = async (
-    e: FormEvent<HTMLFormElement>
-  ): Promise<void> => {
+  const handleDoctorLogin = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-
-    try {
-      const response = await axios.post<DoctorLoginResponse>(
-        'http://localhost:5000/api/doctor-login',
-        {
-          medicalLicenseId,
-          password,
-        }
-      );
-
-      alert(response.data.message);
-    } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.message || 'Login failed'
-        : 'Login failed';
-
-      alert('Error: ' + message);
-    }
+    navigate('/doctor/dashboard');
   };
 
   return (

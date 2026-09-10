@@ -115,14 +115,6 @@ const FileIcon = ({ size = 20 }: IconProps) => (
   </Icon>
 );
 
-const AlertIcon = ({ size = 18 }: IconProps) => (
-  <Icon size={size}>
-    <path d="M10.3 3.5 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.5a2 2 0 0 0-3.4 0Z" />
-    <path d="M12 9v4" />
-    <path d="M12 17h.01" />
-  </Icon>
-);
-
 /* ───────────────── LOGO ───────────────── */
 
 const LogoIcon = () => (
@@ -284,7 +276,7 @@ function AICaseSheet() {
 
         {/* MAIN */}
 
-        <main className="min-w-0 flex-1 lg:ml-[260px]">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
 
           {/* HEADER */}
 

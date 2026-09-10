@@ -1,13 +1,9 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 
-import axios from 'axios';
-
-interface AuthResponse {
-  success: boolean;
-  message: string;
-}
+import { useNavigate } from 'react-router-dom';
 
 function PatientLogin() {
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [fullName, setFullName] = useState<string>('');
@@ -15,9 +11,7 @@ function PatientLogin() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>
-  ): Promise<void> => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
 
     if (!isLogin && password !== confirmPassword) {
@@ -25,26 +19,7 @@ function PatientLogin() {
       return;
     }
 
-    try {
-      const endpoint = isLogin ? 'login' : 'register';
-
-      const requestBody = isLogin
-        ? { identifier, password }
-        : { fullName, identifier, password };
-
-      const response = await axios.post<AuthResponse>(
-        `http://localhost:5000/api/${endpoint}`,
-        requestBody
-      );
-
-      alert(response.data.message);
-    } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.message || 'Something went wrong.'
-        : 'Something went wrong.';
-
-      alert('Error: ' + message);
-    }
+    navigate('/patient/dashboard');
   };
 
   return (
