@@ -1,13 +1,9 @@
 export {};
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { getPatientAppointments, getPatientCases, getPatientProfile, type Appointment, type CaseRecord, type PatientProfile } from "../services/api";
-=======
-import { useState } from "react";
 import Sidebar from "../components/Sidebar";
->>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 
 type IconProps = {
   size?: number;

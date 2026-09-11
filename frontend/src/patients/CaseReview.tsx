@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { ApiError, getCase, submitCase, type CaseRecord } from "../services/api";
-=======
 import Sidebar from "../components/Sidebar";
->>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 
 function CaseReview() {
   const navigate = useNavigate();

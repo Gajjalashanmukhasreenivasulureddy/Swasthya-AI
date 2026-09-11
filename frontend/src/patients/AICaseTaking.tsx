@@ -1,13 +1,8 @@
 export {};
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError, askCaseAI, createCase, generateCaseSummary, getCase, selectCaseLanguage, type ConversationMessage } from "../services/api";
-=======
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import SharedSidebar from "../components/Sidebar";
->>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 
 function Icon({
   name,
@@ -184,48 +179,6 @@ function SidebarItem({
   );
 }
 
-<<<<<<< HEAD
-function Sidebar() {
-  const navigate = useNavigate();
-  const goTo = (path: string) => navigate(path);
-  return (
-    <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col bg-[#0b1d40] px-6 py-6 lg:flex">
-      <Logo />
-
-      <nav className="mt-8 flex flex-col gap-2">
-        <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-
-        <SidebarItem
-          icon="plus"
-          label="New Case"
-          active
-          onClick={() => goTo("/patient/case-taking?new=1")}
-        />
-
-        <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
-
-        <SidebarItem icon="records" label="Medical Records" onClick={() => goTo("/patient/medical-records")} />
-
-        <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
-
-        
-      </nav>
-
-      <div className="mt-auto border-t border-[#43516c] pt-5">
-        <div className="text-[14px] font-extrabold text-white">
-          Ananya Patel
-        </div>
-
-        <div className="mt-1 text-[11px] font-medium text-[#687995]">
-          PID-2026-0892
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-=======
->>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-10 flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:left-[260px] lg:right-0 lg:px-10">

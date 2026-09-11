@@ -1,11 +1,8 @@
 export {};
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { getPatientRecords } from "../services/api";
-=======
 import Sidebar from "../components/Sidebar";
->>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 const Icon = ({
   name,
   size = 20,
