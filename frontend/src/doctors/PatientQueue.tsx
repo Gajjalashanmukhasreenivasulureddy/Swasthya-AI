@@ -1,7 +1,8 @@
 export {};
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { getDoctorCases, type CaseRecord } from "../services/api";
 
 type IconProps = {
   size?: number;
@@ -129,6 +130,11 @@ const LogoIcon = () => (
 function PatientQueue() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cases, setCases] = useState<CaseRecord[]>([]);
+
+  useEffect(() => {
+    getDoctorCases().then(({ cases: currentCases }) => setCases(currentCases)).catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -387,7 +393,7 @@ function PatientQueue() {
                   </h1>
 
                   <span className="rounded-full bg-[#c9f7ef] px-3 py-1 text-[12px] font-extrabold text-[#009c91]">
-                    18 Patients
+                    {cases.length || 0} Patients
                   </span>
 
                 </div>
@@ -427,7 +433,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    18
+                    {cases.length || 0}
                   </p>
                 </div>
 
@@ -451,7 +457,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    2
+                    {cases.filter((item) => ["submitted", "under_review"].includes(item.status)).length}
                   </p>
                 </div>
 
@@ -475,7 +481,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    0
+                    {cases.filter((item) => item.status === "under_review").length}
                   </p>
                 </div>
 
@@ -499,7 +505,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    0
+                    {cases.filter((item) => item.status === "completed").length}
                   </p>
                 </div>
 

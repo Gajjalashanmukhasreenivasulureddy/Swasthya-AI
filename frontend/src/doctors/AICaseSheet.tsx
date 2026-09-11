@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { ApiError, getCase, getDoctorNewCases, reviewCase, type CaseRecord } from "../services/api";
 
 type IconProps = { size?: number; strokeWidth?: number };
 
@@ -19,12 +20,37 @@ const LogoIcon = () => <div className="flex h-9 w-9 shrink-0 items-center justif
 
 function CaseReview() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [caseRecord, setCaseRecord] = useState<CaseRecord | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
     navigate(path);
   };
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedCaseId = window.localStorage.getItem("swasthya-current-case");
+    (savedCaseId ? getCase(savedCaseId) : getDoctorNewCases().then(({ cases }) => cases[0] ? getCase(cases[0].id) : null))
+      .then((record) => {
+        if (record) setCaseRecord(record);
+      })
+      .catch((error) => alert(error instanceof ApiError ? error.message : "Unable to load submitted cases."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const history = caseRecord?.structured_history || {};
+  const summary = caseRecord?.ai_summary || {};
+  const listText = (value: unknown) => Array.isArray(value) ? value.join(", ") : typeof value === "string" ? value : "Not provided";
+  const markReviewed = async () => {
+    if (!caseRecord) return;
+    try {
+      await reviewCase(caseRecord.id);
+      navigate("/doctor/dashboard");
+    } catch (error) {
+      alert(error instanceof ApiError ? error.message : "Unable to review this case.");
+    }
+  };
   return (
     <div className="min-h-screen bg-[#f7f9fc] text-[#102349]">
 
@@ -271,27 +297,27 @@ function CaseReview() {
 
               <CaseCard
                 title="Personal Info"
-                content="Ananya Patel, 24 Years, Female. Contact: +91 98765 43210. Language Preference: English & Gujarati."
+                content={caseRecord ? `${caseRecord.patient_first_name || "Patient"} ${caseRecord.patient_last_name || ""}` : (loading ? "Loading case..." : "No submitted case available.")}
               />
 
               <CaseCard
                 title="Chief Complaint"
-                content="Severe dry cough persisting for 3 weeks, accompanied by mild chest tightness when breathing deeply. No fever."
+                content={caseRecord?.chief_complaint || "Not provided"}
               />
 
               <CaseCard
                 title="Symptoms Detailed"
-                content="Pain location: Lower sternum, non-radiating. Triggers: Exertion, night time, dusty environments. Severity: 6/10."
+                content={`Symptoms: ${listText(summary.symptoms || history.symptoms)}. Duration: ${history.symptom_duration || "Not provided"}. Severity: ${history.severity || "Not provided"}.`}
               />
 
               <CaseCard
                 title="Medical History"
-                content="Mild childhood asthma (inactive for 10 years). No major surgeries. Family history of environmental dust allergies."
+                content={`Medical history: ${listText(summary.medicalHistory || history.medical_history)}. Family history: ${listText(summary.familyHistory || history.family_history)}.`}
               />
 
               <CaseCard
                 title="Active Medications"
-                content="Over-the-counter cough syrup (Ascoril) taken occasionally. Multivitamins daily."
+                content={`Medications: ${listText(summary.medications || history.medication_history)}. Allergies: ${listText(summary.allergies || history.allergy_history)}.`}
               />
 
               <CaseCard
@@ -363,10 +389,7 @@ function CaseReview() {
                 <p className="mt-5 text-[13px] leading-[20px] text-[#172c50]">
 
                   <strong>Primary Observation:</strong>{" "}
-                  Symptoms point towards persistent bronchial allergy or
-                  dust-induced mild asthma exacerbation. Eosinophil elevation
-                  (8%) supports this allergic etiology. Night-time coughing
-                  spikes indicate trigger in home environment.
+                  {listText(summary.clinicalObservations || summary.importantFindings)}
 
                 </p>
 
@@ -378,13 +401,7 @@ function CaseReview() {
 
                 <div className="mt-2 flex flex-wrap gap-2">
 
-                  <Tag text="Allergic Cough" />
-
-                  <Tag text="No Fever" />
-
-                  <Tag text="Elevated Eosinophils" />
-
-                  <Tag text="Asthma History" />
+                  {(Array.isArray(summary.redFlags) && summary.redFlags.length > 0 ? summary.redFlags : (Array.isArray(summary.symptoms) ? summary.symptoms : ["Case information"])).map((tag) => <Tag key={tag} text={tag} />)}
 
                 </div>
 
@@ -402,7 +419,7 @@ function CaseReview() {
               {/* Submit / Draft */}
               <div className="space-y-3">
 
-                <button onClick={() => navigate("/patient/dashboard")} className="flex h-[53px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
+                <button onClick={markReviewed} className="flex h-[53px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
                   Submit Case to Doctor
                 </button>
 

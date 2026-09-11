@@ -1,14 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ApiError, getCase, submitCase, type CaseRecord } from "../services/api";
 
 function CaseReview() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [caseRecord, setCaseRecord] = useState<CaseRecord | null>(null);
+  const [loading, setLoading] = useState(() => Boolean(window.localStorage.getItem("swasthya-current-case")));
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
     navigate(path);
   };
+
+    useEffect(() => {
+      const caseId = window.localStorage.getItem("swasthya-current-case");
+      if (!caseId) {
+        return;
+      }
+      getCase(caseId)
+        .then(setCaseRecord)
+        .catch((error) => alert(error instanceof ApiError ? error.message : "Unable to load this case."))
+        .finally(() => setLoading(false));
+    }, []);
+
+    const history = caseRecord?.structured_history || {};
+    const summary = caseRecord?.ai_summary || {};
+    const listText = (value: unknown) => Array.isArray(value) ? value.join(", ") : typeof value === "string" ? value : "Not provided";
+    const summaryText = (value: unknown) => typeof value === "string" && value.trim() ? value : "Not provided";
+    const finishCase = async () => {
+      if (!caseRecord) return;
+      try {
+        await submitCase(caseRecord.id);
+        navigate("/patient/dashboard");
+      } catch (error) {
+        alert(error instanceof ApiError ? error.message : "Unable to submit this case.");
+      }
+    };
   return (
     <div className="min-h-screen bg-[#f7f9fc] text-[#102349]">
 
@@ -35,7 +63,7 @@ function CaseReview() {
         {/* Navigation */}
         <nav className="mt-7 flex flex-col gap-2 px-6">
           <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[19px]">⌂</span><span className="text-[15px] font-semibold">Dashboard</span></button>
-          <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[22px] font-light">+</span><span className="text-[15px] font-semibold">New Case</span></button>
+          <button type="button" onClick={() => goTo("/patient/case-taking?new=1")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[22px] font-light">+</span><span className="text-[15px] font-semibold">New Case</span></button>
           <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 items-center gap-4 rounded-[8px] bg-[#0f9d92] px-4 text-white"><span className="text-[18px]">▣</span><span className="text-[15px] font-semibold">Appointments</span></button>
           <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">▥</span><span className="text-[15px] font-bold">Medical Records</span></button>
           <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">↥</span><span className="text-[15px] font-semibold">Upload Reports</span></button>
@@ -61,7 +89,7 @@ function CaseReview() {
               <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#0fa397]">✚</div><div><div className="text-[20px] font-extrabold">Swasthya</div><div className="text-[8px] font-bold tracking-[0.5px] text-[#0fa397]">SMART INDIA HACKATHON</div></div></div>
 <nav className="mt-8 flex flex-col gap-2 px-5">
               <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">⌂ <span>Dashboard</span></button>
-              <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">+ <span>New Case</span></button>
+              <button type="button" onClick={() => goTo("/patient/case-taking?new=1")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">+ <span>New Case</span></button>
               <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-white">▣ <span>Appointments</span></button>
               <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">▥ <span>Medical Records</span></button>
               <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">↥ <span>Upload Reports</span></button>
@@ -136,27 +164,27 @@ function CaseReview() {
 
               <CaseCard
                 title="Personal Info"
-                content="Ananya Patel, 24 Years, Female. Contact: +91 98765 43210. Language Preference: English & Gujarati."
+                content="Patient information is available in the registered profile."
               />
 
               <CaseCard
                 title="Chief Complaint"
-                content="Severe dry cough persisting for 3 weeks, accompanied by mild chest tightness when breathing deeply. No fever."
+                content={caseRecord?.chief_complaint || (loading ? "Loading case..." : "No case selected.")}
               />
 
               <CaseCard
                 title="Symptoms Detailed"
-                content="Pain location: Lower sternum, non-radiating. Triggers: Exertion, night time, dusty environments. Severity: 6/10."
+                content={`Symptoms: ${listText(summary.symptoms || history.symptoms)}. Duration: ${summaryText(history.symptom_duration)}. Severity: ${summaryText(history.severity)}.`}
               />
 
               <CaseCard
                 title="Medical History"
-                content="Mild childhood asthma (inactive for 10 years). No major surgeries. Family history of environmental dust allergies."
+                content={`Medical history: ${listText(summary.medicalHistory || history.medical_history)}. Family history: ${listText(summary.familyHistory || history.family_history)}.`}
               />
 
               <CaseCard
                 title="Active Medications"
-                content="Over-the-counter cough syrup (Ascoril) taken occasionally. Multivitamins daily."
+                content={`Medications: ${listText(summary.medications || history.medication_history)}. Allergies: ${listText(summary.allergies || history.allergy_history)}.`}
               />
 
               <CaseCard
@@ -181,17 +209,17 @@ function CaseReview() {
 
                   <InfoRow
                     label="Patient Name:"
-                    value="Ananya Patel"
+                    value={caseRecord ? caseRecord.patient_id : "Not available"}
                   />
 
                   <InfoRow
                     label="PID:"
-                    value="PID-2026-0892"
+                    value={caseRecord?.id || "Not available"}
                   />
 
                   <InfoRow
                     label="Date Started:"
-                    value="Oct 26, 2026"
+                    value="Current case"
                   />
 
                   <div className="flex items-center justify-between">
@@ -201,7 +229,7 @@ function CaseReview() {
                     </span>
 
                     <span className="rounded-[5px] bg-[#c9f6df] px-3 py-1 text-[11px] font-extrabold text-[#0baf79]">
-                      READY (6/6)
+                      {caseRecord?.status === "submitted" ? "SUBMITTED" : "READY"}
                     </span>
 
                   </div>
@@ -228,10 +256,7 @@ function CaseReview() {
                 <p className="mt-5 text-[13px] leading-[20px] text-[#172c50]">
 
                   <strong>Primary Observation:</strong>{" "}
-                  Symptoms point towards persistent bronchial allergy or
-                  dust-induced mild asthma exacerbation. Eosinophil elevation
-                  (8%) supports this allergic etiology. Night-time coughing
-                  spikes indicate trigger in home environment.
+                  {summaryText(summary.historyOfPresentIllness || summary.importantFindings)}
 
                 </p>
 
@@ -243,13 +268,7 @@ function CaseReview() {
 
                 <div className="mt-2 flex flex-wrap gap-2">
 
-                  <Tag text="Allergic Cough" />
-
-                  <Tag text="No Fever" />
-
-                  <Tag text="Elevated Eosinophils" />
-
-                  <Tag text="Asthma History" />
+                  {(Array.isArray(summary.symptoms) && summary.symptoms.length > 0 ? summary.symptoms : [caseRecord?.urgent_flag ? "Urgent attention" : "Case information"]).map((tag) => <Tag key={tag} text={tag} />)}
 
                 </div>
 
@@ -267,7 +286,7 @@ function CaseReview() {
               {/* Submit / Draft */}
               <div className="space-y-3">
 
-                <button onClick={() => goTo("/patient/dashboard")} className="flex h-[53px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
+                <button onClick={finishCase} className="flex h-[53px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
                   Submit Case to Doctor
                 </button>
 

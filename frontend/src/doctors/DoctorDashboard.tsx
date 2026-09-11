@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { getDoctorDashboard, type DoctorDashboard as DoctorDashboardData } from "../services/api";
 
 type IconProps = {
   size?: number;
@@ -245,6 +246,11 @@ const StatusBadge = ({
 function DoctorDashboard() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dashboard, setDashboard] = useState<DoctorDashboardData | null>(null);
+
+  useEffect(() => {
+    getDoctorDashboard().then(setDashboard).catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -500,7 +506,7 @@ function DoctorDashboard() {
                 iconBg="bg-[#e1f3fc]"
                 iconColor="text-[#06a9a0]"
                 label="Total Patients"
-                value="248"
+                value={dashboard ? String(dashboard.total_assigned_cases) : "0"}
                 description="Active in registry"
               />
 
@@ -509,8 +515,8 @@ function DoctorDashboard() {
                 iconBg="bg-[#d6faf4]"
                 iconColor="text-[#049f98]"
                 label="Today's Queue"
-                value="12"
-                description="3 remaining to consult"
+                value={dashboard ? String(dashboard.todays_appointments_count) : "0"}
+                description="Appointments today"
                 badge="Live Flow"
                 badgeClass="bg-[#c9f7ef] text-[#067f78]"
               />
@@ -520,7 +526,7 @@ function DoctorDashboard() {
                 iconBg="bg-[#fff4ca]"
                 iconColor="text-[#0aa099]"
                 label="Pending Case Sheets"
-                value="5"
+                value={dashboard ? String(dashboard.awaiting_review_cases) : "0"}
                 description="Requires doctor review"
                 badge="Review Needed"
                 badgeClass="bg-[#fff1c7] text-[#102349]"
@@ -531,8 +537,8 @@ function DoctorDashboard() {
                 iconBg="bg-[#d7f8e9]"
                 iconColor="text-[#09a08f]"
                 label="Completed Consults"
-                value="7"
-                description="Done this morning"
+                value={dashboard ? String(dashboard.completed_cases) : "0"}
+                description="Completed cases"
               />
             </div>
 

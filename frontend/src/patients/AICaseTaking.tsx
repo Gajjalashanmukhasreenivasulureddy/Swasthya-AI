@@ -1,6 +1,7 @@
 export {};
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ApiError, askCaseAI, createCase, generateCaseSummary, getCase, selectCaseLanguage, type ConversationMessage } from "../services/api";
 
 function Icon({
   name,
@@ -191,7 +192,7 @@ function Sidebar() {
           icon="plus"
           label="New Case"
           active
-          onClick={() => goTo("/patient/case-taking")}
+          onClick={() => goTo("/patient/case-taking?new=1")}
         />
 
         <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
@@ -301,7 +302,50 @@ function RoadmapStep({
 export default function AICaseTaking() {
   const [message, setMessage] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [caseId, setCaseId] = useState<string | null>(null);
+  const [preferredLanguage, setPreferredLanguage] = useState<string | null>(null);
+  const [languageSelectionResponse, setLanguageSelectionResponse] = useState<string | null>(null);
+  const [currentSection, setCurrentSection] = useState("Chief Complaint");
+  const [completedSections, setCompletedSections] = useState<string[]>(["Personal Info"]);
+  const [progress, setProgress] = useState(15);
+  const [messages, setMessages] = useState<ConversationMessage[]>([
+    {
+      sender_type: "ai",
+      message: "Which language would you like to continue in?"
+    }
+  ]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("new") === "1") {
+      window.localStorage.removeItem("swasthya-current-case");
+      setCaseId(null);
+      setPreferredLanguage(null);
+      setLanguageSelectionResponse(null);
+      setCurrentSection("Chief Complaint");
+      setCompletedSections(["Personal Info"]);
+      setProgress(15);
+      setMessages([{ sender_type: "ai", message: "Which language would you like to continue in?" }]);
+      setMessage("");
+      navigate("/patient/case-taking", { replace: true });
+      return;
+    }
+    const savedCaseId = window.localStorage.getItem("swasthya-current-case");
+    if (!savedCaseId) return;
+    getCase(savedCaseId)
+      .then((record) => {
+        setCaseId(record.id);
+        const history = record.structured_history || {};
+        if (typeof history.preferredLanguage === "string") setPreferredLanguage(history.preferredLanguage);
+        if (typeof history.currentSection === "string") setCurrentSection(history.currentSection);
+        if (Array.isArray(history.completedSections)) setCompletedSections(history.completedSections.filter((item): item is string => typeof item === "string"));
+        if (typeof history.progress === "number") setProgress(history.progress);
+        if (record.conversation && record.conversation.length > 0) setMessages(record.conversation);
+      })
+      .catch(() => window.localStorage.removeItem("swasthya-current-case"));
+  }, [location.search, navigate]);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -310,6 +354,52 @@ export default function AICaseTaking() {
 
   const quickSelect = (text: string) => {
     setMessage(text);
+  };
+
+  const submitMessage = async (): Promise<void> => {
+    const answer = message.trim();
+    if (!answer || loading) return;
+
+    setLoading(true);
+    try {
+      if (!preferredLanguage) {
+        const languageResult = await selectCaseLanguage(answer);
+        const normalizedLanguage = /hindi|हिंदी/i.test(answer) ? "Hindi" : /english/i.test(answer) ? "English" : answer;
+        setPreferredLanguage(normalizedLanguage);
+        setLanguageSelectionResponse(answer);
+        setCurrentSection(languageResult.currentSection);
+        setCompletedSections(languageResult.completedSections);
+        setProgress(languageResult.progress);
+        setMessages((current) => [...current, { sender_type: "patient", message: answer }, { sender_type: "ai", message: languageResult.nextQuestion || "What problem are you experiencing?" }]);
+        setMessage("");
+        return;
+      }
+
+      let activeCaseId = caseId;
+      if (!activeCaseId) {
+        const newCase = await createCase(answer, preferredLanguage, languageSelectionResponse || undefined);
+        activeCaseId = newCase.id;
+        setCaseId(activeCaseId);
+        window.localStorage.setItem("swasthya-current-case", activeCaseId);
+      }
+
+      setMessages((current) => [...current, { sender_type: "patient", message: answer }]);
+      setMessage("");
+      const result = await askCaseAI(activeCaseId, answer, preferredLanguage);
+      setCurrentSection(result.currentSection);
+      setCompletedSections(result.completedSections);
+      setProgress(result.progress);
+      if (result.nextQuestion) {
+        setMessages((current) => [...current, { sender_type: "ai", message: result.nextQuestion as string }]);
+      } else if (result.isComplete) {
+        await generateCaseSummary(activeCaseId);
+        setMessages((current) => [...current, { sender_type: "ai", message: "The case information is ready for doctor review." }]);
+      }
+    } catch (error) {
+      alert(error instanceof ApiError ? error.message : "Unable to continue the case. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -326,7 +416,7 @@ export default function AICaseTaking() {
             <Logo />
             <nav className="mt-8 flex flex-col gap-2">
               <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-              <SidebarItem icon="plus" label="New Case" active onClick={() => goTo("/patient/case-taking")} />
+              <SidebarItem icon="plus" label="New Case" active onClick={() => goTo("/patient/case-taking?new=1")} />
               <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
               <SidebarItem icon="records" label="Medical Records" onClick={() => goTo("/patient/medical-records")} />
               <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
@@ -351,17 +441,17 @@ export default function AICaseTaking() {
               </div>
 
               <h2 className="mt-2 text-[20px] font-extrabold text-[#102349]">
-                Section: Chief Complaint
+                Section: {currentSection}
               </h2>
             </div>
 
             <div className="w-full sm:w-[240px]">
               <div className="mb-2 text-right text-[13px] font-medium text-[#687b99]">
-                Progress: Step 3 of 6 (45%)
+                Progress: Step {Math.min(6, Math.max(1, completedSections.length + 1))} of 6 ({progress}%)
               </div>
 
               <div className="h-[8px] overflow-hidden rounded-full bg-[#e0e5ed]">
-                <div className="h-full w-[45%] bg-[#0d9f94]" />
+                <div className="h-full bg-[#0d9f94]" style={{ width: `${progress}%` }} />
               </div>
             </div>
           </section>
@@ -371,53 +461,23 @@ export default function AICaseTaking() {
             {/* Conversation */}
             <section className="flex min-h-[520px] flex-col rounded-xl border border-[#dce3ed] bg-white p-6">
               <div className="flex-1">
-                {/* AI Message */}
-                <div className="flex items-start gap-3">
-                  <div className="flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-full bg-[#0d9f94] text-white">
-                    <Icon name="truck" size={18} />
-                  </div>
-
-                  <div className="max-w-[550px] rounded-xl bg-[#f5f7fa] px-4 py-4">
-                    <div className="mb-1 text-[13px] font-extrabold text-[#0d9f94]">
-                      Swasthya Assistant
+                {messages.map((item, index) => item.sender_type === "patient" ? (
+                  <div className={`${index === 0 ? "" : "mt-6 "}flex justify-end`} key={`${item.sender_type}-${index}`}>
+                    <div className="max-w-[550px] rounded-xl bg-[#c8f6ed] px-4 py-4">
+                      <p className="m-0 text-[15px] leading-[22px] text-[#166c68]">{item.message}</p>
                     </div>
-
-                    <p className="m-0 text-[15px] leading-[22px] text-[#102349]">
-                      Namaste Ananya. Let's outline what symptoms you are
-                      experiencing today to help prepare your clinical case
-                      sheet. Can you describe your main health concern?
-                    </p>
                   </div>
-                </div>
-
-                {/* Patient Message */}
-                <div className="mt-6 flex justify-end">
-                  <div className="max-w-[550px] rounded-xl bg-[#c8f6ed] px-4 py-4">
-                    <p className="m-0 text-[15px] leading-[22px] text-[#166c68]">
-                      I have had a bad dry cough and slight chest tightness
-                      when breathing deeply for a while now.
-                    </p>
-                  </div>
-                </div>
-
-                {/* AI Follow-up */}
-                <div className="mt-6 flex items-start gap-3">
-                  <div className="flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-full bg-[#0d9f94] text-white">
-                    <Icon name="truck" size={18} />
-                  </div>
-
-                  <div className="max-w-[550px] rounded-xl bg-[#f5f7fa] px-4 py-4">
-                    <div className="mb-1 text-[13px] font-extrabold text-[#0d9f94]">
-                      Swasthya Assistant
+                ) : (
+                  <div className={`${index === 0 ? "" : "mt-6 "}flex items-start gap-3`} key={`${item.sender_type}-${index}`}>
+                    <div className="flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-full bg-[#0d9f94] text-white">
+                      <Icon name="truck" size={18} />
                     </div>
-
-                    <p className="m-0 text-[15px] leading-[22px] text-[#102349]">
-                      Understood. Cough accompanied by chest tightness. Around
-                      how long have these specific symptoms been bothersome
-                      for you?
-                    </p>
+                    <div className="max-w-[550px] rounded-xl bg-[#f5f7fa] px-4 py-4">
+                      <div className="mb-1 text-[13px] font-extrabold text-[#0d9f94]">Swasthya Assistant</div>
+                      <p className="m-0 text-[15px] leading-[22px] text-[#102349]">{item.message}</p>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
 
               {/* Input Area */}
@@ -470,7 +530,7 @@ export default function AICaseTaking() {
 
                   <button
                     type="button"
-                    onClick={() => navigate("/patient/upload-reports")}
+                    onClick={submitMessage}
                     className="h-[50px] rounded-lg bg-[#0b1d40] px-7 text-[14px] font-extrabold text-white"
                   >
                     Submit
@@ -489,37 +549,37 @@ export default function AICaseTaking() {
                 <RoadmapStep
                   number={1}
                   label="Personal Info"
-                  status="done"
+                  status={completedSections.includes("Personal Info") ? "done" : currentSection === "Personal Info" ? "active" : "upcoming"}
                 />
 
                 <RoadmapStep
                   number={2}
                   label="Chief Complaint"
-                  status="active"
+                  status={completedSections.includes("Chief Complaint") ? "done" : currentSection === "Chief Complaint" ? "active" : "upcoming"}
                 />
 
                 <RoadmapStep
                   number={3}
                   label="Symptoms Detailed"
-                  status="upcoming"
+                  status={completedSections.includes("Symptoms Detailed") ? "done" : currentSection === "Symptoms Detailed" ? "active" : "upcoming"}
                 />
 
                 <RoadmapStep
                   number={4}
                   label="Medical History"
-                  status="upcoming"
+                  status={completedSections.includes("Medical History") ? "done" : currentSection === "Medical History" ? "active" : "upcoming"}
                 />
 
                 <RoadmapStep
                   number={5}
                   label="Active Medications"
-                  status="upcoming"
+                  status={completedSections.includes("Active Medications") ? "done" : currentSection === "Active Medications" ? "active" : "upcoming"}
                 />
 
                 <RoadmapStep
                   number={6}
                   label="Reports Sync"
-                  status="upcoming"
+                  status={completedSections.includes("Reports Sync") ? "done" : currentSection === "Reports Sync" ? "active" : "upcoming"}
                 />
               </div>
             </aside>

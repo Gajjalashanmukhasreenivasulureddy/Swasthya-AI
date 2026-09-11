@@ -90,7 +90,7 @@ function UploadReports() {
         {/* Navigation */}
         <nav className="mt-7 flex flex-col gap-2 px-6">
           <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[19px]">⌂</span><span className="text-[15px] font-semibold">Dashboard</span></button>
-          <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[22px] font-light">+</span><span className="text-[15px] font-semibold">New Case</span></button>
+          <button type="button" onClick={() => goTo("/patient/case-taking?new=1")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[22px] font-light">+</span><span className="text-[15px] font-semibold">New Case</span></button>
           <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">▣</span><span className="text-[15px] font-semibold">Appointments</span></button>
           <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">▥</span><span className="text-[15px] font-bold">Medical Records</span></button>
           <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 items-center gap-4 rounded-[8px] bg-[#0f9d92] px-4 text-white"><span className="text-[18px]">↥</span><span className="text-[15px] font-semibold">Upload Reports</span></button>
@@ -339,7 +339,7 @@ function UploadReports() {
                   Continue to Review
                 </button>
 
-                <button onClick={() => navigate("/patient/case-taking")} className="flex h-[51px] w-full items-center justify-center rounded-[8px] border border-[#dce3ed] bg-white text-[15px] font-bold text-[#102349] transition hover:bg-[#f7f9fc]">
+                <button onClick={() => navigate("/patient/case-taking?new=1")} className="flex h-[51px] w-full items-center justify-center rounded-[8px] border border-[#dce3ed] bg-white text-[15px] font-bold text-[#102349] transition hover:bg-[#f7f9fc]">
                   Back to Case Intake
                 </button>
 

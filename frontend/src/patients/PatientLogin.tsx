@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { ApiError, login, registerPatient } from '../services/api';
 
 function PatientLogin() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ function PatientLogin() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
     if (!isLogin && password !== confirmPassword) {
@@ -19,7 +20,26 @@ function PatientLogin() {
       return;
     }
 
-    navigate('/patient/dashboard');
+    try {
+      if (isLogin) {
+        const result = await login(identifier, password);
+        if (result.user.role !== 'patient') throw new ApiError('This account is not a patient account.', 403);
+      } else {
+        const names = fullName.trim().split(/\s+/);
+        const firstName = names.shift() || '';
+        const lastName = names.join(' ') || firstName;
+        const result = await registerPatient({
+          email: identifier,
+          password,
+          first_name: firstName,
+          last_name: lastName
+        });
+        if (result.user.role !== 'patient') throw new ApiError('This account is not a patient account.', 403);
+      }
+      navigate('/patient/dashboard');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to authenticate. Please try again.');
+    }
   };
 
   return (

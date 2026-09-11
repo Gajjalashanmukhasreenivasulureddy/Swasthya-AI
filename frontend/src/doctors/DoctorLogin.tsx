@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { ApiError, login } from '../services/api';
 
 function DoctorLogin() {
   const navigate = useNavigate();
@@ -8,9 +9,15 @@ function DoctorLogin() {
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const handleDoctorLogin = (e: FormEvent<HTMLFormElement>): void => {
+  const handleDoctorLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    navigate('/doctor/dashboard');
+    try {
+      const result = await login(medicalLicenseId, password);
+      if (result.user.role !== 'doctor') throw new ApiError('This account is not a doctor account.', 403);
+      navigate('/doctor/dashboard');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to authenticate. Please try again.');
+    }
   };
 
   return (

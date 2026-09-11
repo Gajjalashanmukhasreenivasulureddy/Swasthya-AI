@@ -1,6 +1,7 @@
 export {};
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getPatientRecords } from "../services/api";
 const Icon = ({
   name,
   size = 20,
@@ -246,6 +247,11 @@ const MedicalRecordCard = ({
 function MedicalRecords() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [records, setRecords] = useState<Record<string, unknown>[]>([]);
+
+  useEffect(() => {
+    getPatientRecords().then(setRecords).catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -277,7 +283,7 @@ function MedicalRecords() {
           {/* Navigation */}
           <nav className="mt-12 flex flex-col gap-2">
             <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-            <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking")} />
+            <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking?new=1")} />
             <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
             <SidebarItem icon="chart" label="Medical Records" active onClick={() => goTo("/patient/medical-records")} />
             <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
@@ -302,7 +308,7 @@ function MedicalRecords() {
               <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0da69a]"><Icon name="truck" size={21} /></div><div><div className="text-[19px] font-extrabold">Swasthya</div><div className="mt-1 text-[8px] font-bold tracking-[0.08em] text-[#10aaa0]">SMART INDIA HACKATHON</div></div></div>
               <nav className="mt-10 flex flex-col gap-2">
                 <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-                <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking")} />
+                <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking?new=1")} />
                 <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
                 <SidebarItem icon="chart" label="Medical Records" active onClick={() => goTo("/patient/medical-records")} />
                 <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
@@ -374,16 +380,16 @@ function MedicalRecords() {
 
             {/* Records */}
             <div className="mt-7 flex flex-col gap-6">
-              <MedicalRecordCard
-                title="Allergic Bronchitis"
-                subtitle="First OPD Consult • Verified on Oct 12, 2026"
-                expanded
-              />
-
-              <MedicalRecordCard
-                title="Routine Physical Examination"
-                subtitle="Annual Health Checkup • Verified on Sep 18, 2026"
-              />
+              {(records.length > 0 ? records : [
+                { title: "No medical records yet", record_type: "", recorded_at: null }
+              ]).map((record, index) => (
+                <MedicalRecordCard
+                  key={String(record.id || index)}
+                  title={String(record.title || "Medical record")}
+                  subtitle={`${String(record.record_type || "Clinical record")} ${record.recorded_at ? `• ${new Date(String(record.recorded_at)).toLocaleDateString()}` : ""}`}
+                  expanded={index === 0}
+                />
+              ))}
             </div>
           </section>
         </main>
