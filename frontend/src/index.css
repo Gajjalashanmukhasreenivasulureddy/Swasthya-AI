@@ -42,3 +42,14 @@ img {
   max-width: 100%;
   display: block;
 }
+
+:root[data-theme="dark"] {
+  color: #e4f4ef;
+  background: #122321;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background: #122321;
+  color: #e4f4ef;
+}

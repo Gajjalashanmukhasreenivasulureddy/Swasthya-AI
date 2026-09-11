@@ -1,4 +1,6 @@
 export {};
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 const Icon = ({
   name,
   size = 20,
@@ -119,13 +121,15 @@ const SidebarItem = ({
   icon,
   label,
   active = false,
+  onClick,
 }: {
   icon: string;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }) => {
   return (
-    <div
+    <button type="button" onClick={onClick}
       className={`flex h-[43px] items-center gap-4 rounded-lg px-4 text-[15px] font-semibold ${
         active
           ? "bg-[#119c91] text-white"
@@ -134,7 +138,7 @@ const SidebarItem = ({
     >
       <Icon name={icon} size={20} />
       <span>{label}</span>
-    </div>
+    </button>
   );
 };
 
@@ -240,6 +244,14 @@ const MedicalRecordCard = ({
 };
 
 function MedicalRecords() {
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const goTo = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f9fc] font-['Outfit'] text-[#102349]">
       <div className="flex min-h-screen">
@@ -264,16 +276,11 @@ function MedicalRecords() {
 
           {/* Navigation */}
           <nav className="mt-12 flex flex-col gap-2">
-            <SidebarItem icon="home" label="Dashboard" />
-            <SidebarItem icon="plus" label="New Case" />
-            <SidebarItem icon="calendar" label="Appointments" />
-            <SidebarItem
-              icon="chart"
-              label="Medical Records"
-              active
-            />
-            <SidebarItem icon="users" label="Profile" />
-            <SidebarItem icon="settings" label="Settings" />
+            <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
+            <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking")} />
+            <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
+            <SidebarItem icon="chart" label="Medical Records" active onClick={() => goTo("/patient/medical-records")} />
+            <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
           </nav>
 
           {/* Bottom Profile */}
@@ -288,8 +295,26 @@ function MedicalRecords() {
           </div>
         </aside>
 
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
+            <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#091c42] px-6 py-6 text-white shadow-2xl">
+              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0da69a]"><Icon name="truck" size={21} /></div><div><div className="text-[19px] font-extrabold">Swasthya</div><div className="mt-1 text-[8px] font-bold tracking-[0.08em] text-[#10aaa0]">SMART INDIA HACKATHON</div></div></div>
+              <nav className="mt-10 flex flex-col gap-2">
+                <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
+                <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking")} />
+                <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
+                <SidebarItem icon="chart" label="Medical Records" active onClick={() => goTo("/patient/medical-records")} />
+                <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
+              </nav>
+              <div className="mt-auto border-t border-[#53617d] pt-4"><p className="text-[13px] font-extrabold">Ananya Patel</p><p className="mt-1 text-[11px] text-[#71819f]">PID-2026-0892</p></div>
+            </aside>
+          </div>
+        )}
+
         {/* MAIN AREA */}
         <main className="ml-0 min-h-screen flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
+          <button type="button" onClick={() => setMobileMenuOpen(true)} className="fixed left-4 top-4 z-40 rounded-lg bg-white p-2 text-[#102349] shadow lg:hidden" aria-label="Open menu">☰</button>
           {/* TOP HEADER */}
           <header className="flex h-[80px] items-center border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:px-10">
             <h1 className="text-[25px] font-extrabold text-[#102349]">

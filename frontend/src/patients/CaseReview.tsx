@@ -1,7 +1,14 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function CaseReview() {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const goTo = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
   return (
     <div className="min-h-screen bg-[#f7f9fc] text-[#102349]">
 
@@ -27,49 +34,11 @@ function CaseReview() {
 
         {/* Navigation */}
         <nav className="mt-7 flex flex-col gap-2 px-6">
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[19px]">⌂</span>
-            <span className="text-[15px] font-semibold">
-              Dashboard
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] bg-[#0f9d92] px-4 text-white">
-            <span className="text-[22px] font-light">+</span>
-            <span className="text-[15px] font-bold">
-              New Case
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">▣</span>
-            <span className="text-[15px] font-semibold">
-              Appointments
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">▥</span>
-            <span className="text-[15px] font-semibold">
-              Medical Records
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">♙</span>
-            <span className="text-[15px] font-semibold">
-              Profile
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">⚙</span>
-            <span className="text-[15px] font-semibold">
-              Settings
-            </span>
-          </button>
-
+          <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[19px]">⌂</span><span className="text-[15px] font-semibold">Dashboard</span></button>
+          <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[22px] font-light">+</span><span className="text-[15px] font-semibold">New Case</span></button>
+          <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 items-center gap-4 rounded-[8px] bg-[#0f9d92] px-4 text-white"><span className="text-[18px]">▣</span><span className="text-[15px] font-semibold">Appointments</span></button>
+          <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">▥</span><span className="text-[15px] font-bold">Medical Records</span></button>
+          <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">↥</span><span className="text-[15px] font-semibold">Upload Reports</span></button>
         </nav>
 
         {/* Patient information */}
@@ -85,8 +54,26 @@ function CaseReview() {
       </aside>
 
 
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
+            <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0b1d41] px-6 py-6 text-white shadow-2xl">
+              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#0fa397]">✚</div><div><div className="text-[20px] font-extrabold">Swasthya</div><div className="text-[8px] font-bold tracking-[0.5px] text-[#0fa397]">SMART INDIA HACKATHON</div></div></div>
+<nav className="mt-8 flex flex-col gap-2 px-5">
+              <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">⌂ <span>Dashboard</span></button>
+              <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">+ <span>New Case</span></button>
+              <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-white">▣ <span>Appointments</span></button>
+              <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">▥ <span>Medical Records</span></button>
+              <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 items-center gap-4 rounded-lg px-4 text-[#687994]">↥ <span>Upload Reports</span></button>
+            </nav>
+              <div className="mt-auto border-t border-[#31415e] pt-5"><p className="text-[13px] font-bold">Ananya Patel</p><p className="mt-1 text-[11px] text-[#687994]">PID-2026-0892</p></div>
+            </aside>
+          </div>
+        )}
+
       {/* ================= MAIN AREA ================= */}
-      <main className="ml-0 min-h-screen lg:ml-[260px]">
+      <main className="ml-0 min-h-screen pt-[70px] lg:ml-[260px] lg:pt-0">
+        <button type="button" onClick={() => setMobileMenuOpen(true)} className="fixed left-4 top-4 z-40 rounded-lg bg-white p-2 text-[#102349] shadow lg:hidden" aria-label="Open menu">☰</button>
 
         {/* Header */}
         <header className="flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:px-10">
@@ -280,7 +267,7 @@ function CaseReview() {
               {/* Submit / Draft */}
               <div className="space-y-3">
 
-                <button onClick={() => navigate("/patient/dashboard")} className="flex h-[53px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
+                <button onClick={() => goTo("/patient/dashboard")} className="flex h-[53px] w-full items-center justify-center rounded-[8px] bg-[#0f9d92] text-[15px] font-extrabold text-white transition hover:bg-[#0b8c82]">
                   Submit Case to Doctor
                 </button>
 

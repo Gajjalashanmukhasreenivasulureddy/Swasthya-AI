@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 function UploadReports() {
   const navigate = useNavigate();
+  const goTo = (path: string) => {
+    navigate(path);
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [files, setFiles] = useState([
@@ -86,49 +89,11 @@ function UploadReports() {
 
         {/* Navigation */}
         <nav className="mt-7 flex flex-col gap-2 px-6">
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[19px]">⌂</span>
-            <span className="text-[15px] font-semibold">
-              Dashboard
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[22px] font-light">+</span>
-            <span className="text-[15px] font-semibold">
-              New Case
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">▣</span>
-            <span className="text-[15px] font-semibold">
-              Appointments
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] bg-[#0f9d92] px-4 text-white">
-            <span className="text-[18px]">▥</span>
-            <span className="text-[15px] font-bold">
-              Medical Records
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">♙</span>
-            <span className="text-[15px] font-semibold">
-              Profile
-            </span>
-          </button>
-
-          <button className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]">
-            <span className="text-[18px]">⚙</span>
-            <span className="text-[15px] font-semibold">
-              Settings
-            </span>
-          </button>
-
+          <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[19px]">⌂</span><span className="text-[15px] font-semibold">Dashboard</span></button>
+          <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[22px] font-light">+</span><span className="text-[15px] font-semibold">New Case</span></button>
+          <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">▣</span><span className="text-[15px] font-semibold">Appointments</span></button>
+          <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 items-center gap-4 rounded-[8px] px-4 text-[#687994]"><span className="text-[18px]">▥</span><span className="text-[15px] font-bold">Medical Records</span></button>
+          <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 items-center gap-4 rounded-[8px] bg-[#0f9d92] px-4 text-white"><span className="text-[18px]">↥</span><span className="text-[15px] font-semibold">Upload Reports</span></button>
         </nav>
 
         {/* Patient information */}
@@ -146,7 +111,7 @@ function UploadReports() {
 
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="ml-0 min-h-screen lg:ml-[260px]">
+      <main className="ml-0 min-h-screen pt-[70px] lg:ml-[260px] lg:pt-0">
 
         {/* Header */}
         <header className="flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:px-10">

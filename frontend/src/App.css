@@ -33,6 +33,67 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--swasthya-paper);
 }
 
+.global-theme-toggle {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--swasthya-line);
+  border-radius: 50%;
+  color: var(--swasthya-ink);
+  background: var(--swasthya-paper);
+  box-shadow: 0 8px 24px rgb(22 60 56 / 18%);
+  font-size: 20px;
+}
+
+html[data-theme="dark"] .min-h-screen,
+html[data-theme="dark"] main {
+  background: #122321 !important;
+  color: #e4f4ef;
+}
+
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-\[\#ffffff\],
+html[data-theme="dark"] .bg-\[\#f6f8fb\],
+html[data-theme="dark"] .bg-\[\#f7f9fc\],
+html[data-theme="dark"] .bg-\[\#fbfdfc\] {
+  background: #19312d !important;
+}
+
+html[data-theme="dark"] [class*="border-[#dc"],
+html[data-theme="dark"] [class*="border-[#dce"],
+html[data-theme="dark"] [class*="border-[#d2"] {
+  border-color: #29423e !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  color: #e4f4ef;
+  background: #19312d;
+}
+
+html[data-theme="dark"] .text-\[\#102349\],
+html[data-theme="dark"] .text-\[\#172c50\] {
+  color: #e4f4ef !important;
+}
+
+html[data-theme="dark"] .text-\[\#687b99\],
+html[data-theme="dark"] .text-\[\#687994\],
+html[data-theme="dark"] .text-\[\#71819d\],
+html[data-theme="dark"] .text-\[\#657795\] {
+  color: #a5bab5 !important;
+}
+
+html[data-theme="dark"] .global-theme-toggle {
+  color: #e4f4ef;
+  background: #19312d;
+}
+
 aside[class*="bg-[#0d2147]"],
 aside[class*="bg-[#0b1d40]"],
 aside[class*="bg-[#0b1d41]"],
