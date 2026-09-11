@@ -192,7 +192,7 @@ const StatCard = ({
 function PatientDashboard() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
+    <div className="min-h-screen bg-[#fbfdfc] font-[DM_Sans,sans-serif] text-[#16302d]">
       <div className="flex min-h-screen">
         {/* SIDEBAR */}
 
