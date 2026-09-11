@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
 @import "tailwindcss";
 
 :root {
-  font-family: "Outfit", sans-serif;
-  color: #102349;
-  background: #ffffff;
+  font-family: "DM Sans", sans-serif;
+  color: #16302d;
+  background: #fbfdfc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -23,8 +23,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #ffffff;
-  font-family: "Outfit", sans-serif;
+  background: #fbfdfc;
+  font-family: "DM Sans", sans-serif;
 }
 
 button,
@@ -41,4 +41,15 @@ button {
 img {
   max-width: 100%;
   display: block;
+}
+
+:root[data-theme="dark"] {
+  color: #e4f4ef;
+  background: #122321;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background: #122321;
+  color: #e4f4ef;
 }

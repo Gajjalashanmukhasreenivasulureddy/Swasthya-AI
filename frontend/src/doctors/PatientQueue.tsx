@@ -1,4 +1,6 @@
 export {};
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 type IconProps = {
@@ -78,12 +80,6 @@ const ReportsIcon = ({ size = 20 }: IconProps) => (
   </Icon>
 );
 
-const SettingsIcon = ({ size = 20 }: IconProps) => (
-  <Icon size={size}>
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1h-2.5V20a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H6.4v-2.5H6.5a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V5h2.5v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v2.5h-.1a1.7 1.7 0 0 0-1.6 1Z" />
-  </Icon>
-);
 
 const SearchIcon = ({ size = 19 }: IconProps) => (
   <Icon size={size}>
@@ -131,6 +127,15 @@ const LogoIcon = () => (
 /* ───────────────── PAGE ───────────────── */
 
 function PatientQueue() {
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const goTo = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
+
+
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
       <div className="flex min-h-screen">
@@ -152,69 +157,51 @@ function PatientQueue() {
               </p>
             </div>
           </div>
+          <nav className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/dashboard")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <HomeIcon size={20} />
+                <span className="text-[15px] font-bold">Dashboard</span>
+              </button>
 
-          <nav className="flex flex-col gap-1 px-6">
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/patients")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <PatientsIcon size={20} />
+                <span className="text-[15px] font-bold">Patients</span>
+              </button>
 
-            <button
-              type="button"
-              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
-            >
-              <HomeIcon size={20} />
-              <span className="text-[15px] font-bold">
-                Dashboard
-              </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/queue")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"
+              >
+                <QueueIcon size={20} />
+                <span className="text-[15px] font-bold">Queue</span>
+              </button>
 
-            <button
-              type="button"
-              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
-            >
-              <PatientsIcon size={20} />
-              <span className="text-[15px] font-bold">
-                Patients
-              </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/schedule")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <CalendarIcon size={20} />
+                <span className="text-[15px] font-bold">Schedule</span>
+              </button>
 
-            <button
-              type="button"
-              className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"
-            >
-              <QueueIcon size={20} />
-              <span className="text-[15px] font-bold">
-                Queue
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
-            >
-              <CalendarIcon size={20} />
-              <span className="text-[15px] font-bold">
-                Schedule
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
-            >
-              <ReportsIcon size={20} />
-              <span className="text-[15px] font-bold">
-                Reports
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
-            >
-              <SettingsIcon size={20} />
-              <span className="text-[15px] font-bold">
-                Settings
-              </span>
-            </button>
-
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/case-sheet")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <ReportsIcon size={20} />
+                <span className="text-[15px] font-bold">Reports</span>
+              </button>
           </nav>
 
           <div className="mt-auto px-6 pb-6">
@@ -252,8 +239,10 @@ function PatientQueue() {
 
           <button
             type="button"
-            className="rounded-lg p-2 text-white"
-            aria-label="Open menu"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="rounded-lg p-2 text-white transition hover:bg-white/10"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
           >
             <QueueIcon size={23} />
           </button>
@@ -262,7 +251,83 @@ function PatientQueue() {
 
         {/* MAIN */}
 
-        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
+                {/* MOBILE NAVIGATION */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute inset-0 bg-black/40"
+            />
+            <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0d2147] px-5 pb-6 pt-6 shadow-2xl">
+              <div className="flex items-center gap-3 px-1 pb-7">
+                <LogoIcon />
+                <div>
+                  <h1 className="text-[19px] font-extrabold leading-none text-white">Swasthya</h1>
+                  <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.09em] text-[#0fa59a]">
+                    Smart India Hackathon
+                  </p>
+                </div>
+              </div>
+
+              <nav className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/dashboard")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <HomeIcon size={20} />
+                <span className="text-[15px] font-bold">Dashboard</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/patients")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <PatientsIcon size={20} />
+                <span className="text-[15px] font-bold">Patients</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/queue")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"
+              >
+                <QueueIcon size={20} />
+                <span className="text-[15px] font-bold">Queue</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/schedule")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <CalendarIcon size={20} />
+                <span className="text-[15px] font-bold">Schedule</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goTo("/doctor/case-sheet")}
+                className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"
+              >
+                <ReportsIcon size={20} />
+                <span className="text-[15px] font-bold">Reports</span>
+              </button>
+              </nav>
+
+              <div className="mt-auto">
+                <div className="mb-4 h-px bg-[#52627d]/50" />
+                <p className="text-[14px] font-bold text-white">Dr. Rohan Sharma</p>
+                <p className="mt-0.5 text-[11px] font-medium text-[#71819d]">MCI-2026-9485</p>
+              </div>
+            </aside>
+          </div>
+        )}
+
+<main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
 
           {/* HEADER */}
 

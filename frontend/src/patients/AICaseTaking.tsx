@@ -53,6 +53,15 @@ function Icon({
         </svg>
       );
 
+    case "upload":
+      return (
+        <svg {...common}>
+          <path d="M12 16V4" />
+          <path d="m7 9 5-5 5 5" />
+          <path d="M5 20h14" />
+        </svg>
+      );
+
     case "profile":
       return (
         <svg {...common}>
@@ -146,13 +155,15 @@ function SidebarItem({
   icon,
   label,
   active = false,
+  onClick,
 }: {
   icon: string;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div
+    <button type="button" onClick={onClick}
       className={`flex h-43px h-[43px] items-center gap-4 rounded-lg px-4 ${
         active
           ? "bg-[#109f94] text-white"
@@ -162,31 +173,34 @@ function SidebarItem({
       <Icon name={icon} size={20} />
 
       <span className="text-[15px] font-bold">{label}</span>
-    </div>
+    </button>
   );
 }
 
 function Sidebar() {
+  const navigate = useNavigate();
+  const goTo = (path: string) => navigate(path);
   return (
     <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col bg-[#0b1d40] px-6 py-6 lg:flex">
       <Logo />
 
       <nav className="mt-8 flex flex-col gap-2">
-        <SidebarItem icon="home" label="Dashboard" />
+        <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
 
         <SidebarItem
           icon="plus"
           label="New Case"
           active
+          onClick={() => goTo("/patient/case-taking")}
         />
 
-        <SidebarItem icon="calendar" label="Appointments" />
+        <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
 
-        <SidebarItem icon="records" label="Medical Records" />
+        <SidebarItem icon="records" label="Medical Records" onClick={() => goTo("/patient/medical-records")} />
 
-        <SidebarItem icon="profile" label="Profile" />
+        <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
 
-        <SidebarItem icon="settings" label="Settings" />
+        
       </nav>
 
       <div className="mt-auto border-t border-[#43516c] pt-5">
@@ -286,13 +300,42 @@ function RoadmapStep({
 
 export default function AICaseTaking() {
   const [message, setMessage] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  const goTo = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
 
   const quickSelect = (text: string) => {
     setMessage(text);
   };
 
   return (
+    <>
+      <div className="fixed inset-x-0 top-0 z-40 flex h-[70px] items-center justify-between bg-[#0b1d40] px-5 lg:hidden">
+        <Logo />
+        <button type="button" onClick={() => setMobileMenuOpen(true)} className="rounded-lg p-2 text-white" aria-label="Open menu">☰</button>
+      </div>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
+          <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0b1d40] px-6 py-6 text-white shadow-2xl">
+            <Logo />
+            <nav className="mt-8 flex flex-col gap-2">
+              <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
+              <SidebarItem icon="plus" label="New Case" active onClick={() => goTo("/patient/case-taking")} />
+              <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
+              <SidebarItem icon="records" label="Medical Records" onClick={() => goTo("/patient/medical-records")} />
+              <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
+            </nav>
+            <div className="mt-auto border-t border-[#43516c] pt-5"><div className="text-[14px] font-extrabold">Ananya Patel</div><div className="mt-1 text-[11px] text-[#687995]">PID-2026-0892</div></div>
+          </aside>
+        </div>
+      )}
+
     <div className="min-h-screen bg-[#f7f9fc] font-['Outfit',sans-serif] text-[#102349]">
       <Sidebar />
 
@@ -484,5 +527,6 @@ export default function AICaseTaking() {
         </div>
       </main>
     </div>
+    </>
   );
 }

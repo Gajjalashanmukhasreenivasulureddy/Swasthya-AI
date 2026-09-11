@@ -1,15 +1,10 @@
-export {};
-import type { ReactNode } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
 
 type IconProps = {
   size?: number;
   strokeWidth?: number;
-};
-
-type NavItem = {
-  label: string;
-  icon: ReactNode;
 };
 
 const Icon = ({
@@ -79,13 +74,6 @@ const ReportsIcon = ({ size = 20 }: IconProps) => (
     <path d="M10 20V4" />
     <path d="M16 20v-7" />
     <path d="M22 20V7" />
-  </Icon>
-);
-
-const SettingsIcon = ({ size = 20 }: IconProps) => (
-  <Icon size={size}>
-    <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.42 1.42-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V19.6h-2v-.08a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.42-1.42.06-.06A1.7 1.7 0 0 0 9.4 15a1.7 1.7 0 0 0-1.56-1.03H7.6v-2h.24A1.7 1.7 0 0 0 9.4 10.94a1.7 1.7 0 0 0-.34-1.88L9 9l1.42-1.42.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56V6.4h2v.02a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.78 9l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.02v2h-.02A1.7 1.7 0 0 0 19.4 15Z" />
   </Icon>
 );
 
@@ -208,7 +196,7 @@ const StatCard = ({
   badgeClass?: string;
 }) => {
   return (
-    <div className="rounded-xl border border-[#dce4ef] bg-white p-5 shadow-[0_2px_8px_rgba(15,35,73,0.03)]">
+    <div className="rounded-xl border border-[#dce4ef] bg-white p-4 shadow-[0_2px_8px_rgba(15,35,73,0.03)] sm:p-5">
       <div className="flex items-start justify-between">
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg} ${iconColor}`}
@@ -256,40 +244,19 @@ const StatusBadge = ({
 
 function DoctorDashboard() {
   const navigate = useNavigate();
-  const navItems: NavItem[] = [
-    {
-      label: "Dashboard",
-      icon: <HomeIcon size={20} />,
-    },
-    {
-      label: "Patients",
-      icon: <UsersIcon size={20} />,
-    },
-    {
-      label: "Queue",
-      icon: <QueueIcon size={20} />,
-    },
-    {
-      label: "Schedule",
-      icon: <CalendarIcon size={20} />,
-    },
-    {
-      label: "Reports",
-      icon: <ReportsIcon size={20} />,
-    },
-    {
-      label: "Settings",
-      icon: <SettingsIcon size={20} />,
-    },
-  ];
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const goTo = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
       <div className="flex min-h-screen">
-        {/* ───────────────── SIDEBAR ───────────────── */}
 
+        {/* SIDEBAR */}
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#0d2147] lg:flex">
-          {/* Logo */}
           <div className="flex items-center gap-3 px-6 pb-7 pt-6">
             <LogoIcon />
 
@@ -304,42 +271,54 @@ function DoctorDashboard() {
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Dashboard-only navigation */}
           <nav className="flex flex-col gap-1 px-6">
-            {navItems.map((item, index) => {
-              const active = index === 0;
+            <button
+              type="button"
+              onClick={() => goTo("/doctor/dashboard")}
+              className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white transition-colors hover:bg-[#0e938b]"
+            >
+              <HomeIcon size={20} />
+              <span className="text-[15px] font-bold">Dashboard</span>
+            </button>
 
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={() =>
-                    navigate(
-                      {
-                        Dashboard: "/doctor/dashboard",
-                        Patients: "/doctor/patients",
-                        Queue: "/doctor/queue",
-                        Schedule: "/doctor/schedule",
-                        Reports: "/doctor/case-sheet",
-                        Settings: "/doctor/dashboard",
-                      }[item.label] ?? "/doctor/dashboard",
-                    )
-                  }
-                  className={`flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left transition ${
-                    active
-                      ? "bg-[#109f96] text-white"
-                      : "text-[#71819d] hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  {item.icon}
+            <button
+              type="button"
+              onClick={() => goTo("/doctor/patients")}
+              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <UsersIcon size={20} />
+              <span className="text-[15px] font-bold">Patients</span>
+            </button>
 
-                  <span className="text-[15px] font-bold">{item.label}</span>
-                </button>
-              );
-            })}
+            <button
+              type="button"
+              onClick={() => goTo("/doctor/queue")}
+              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <QueueIcon size={20} />
+              <span className="text-[15px] font-bold">Queue</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => goTo("/doctor/schedule")}
+              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <CalendarIcon size={20} />
+              <span className="text-[15px] font-bold">Schedule</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => goTo("/doctor/case-sheet")}
+              className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <ReportsIcon size={20} />
+              <span className="text-[15px] font-bold">Reports</span>
+            </button>
           </nav>
 
-          {/* Doctor profile */}
           <div className="mt-auto px-6 pb-6">
             <div className="mb-4 h-px bg-[#52627d]/50" />
 
@@ -353,8 +332,7 @@ function DoctorDashboard() {
           </div>
         </aside>
 
-        {/* ───────────────── MOBILE SIDEBAR / TOP BAR ───────────────── */}
-
+        {/* MOBILE TOP BAR */}
         <div className="fixed left-0 right-0 top-0 z-40 flex h-[70px] items-center justify-between border-b border-[#dce4ef] bg-[#0d2147] px-5 lg:hidden">
           <div className="flex items-center gap-3">
             <LogoIcon />
@@ -372,24 +350,106 @@ function DoctorDashboard() {
 
           <button
             type="button"
-            className="rounded-lg p-2 text-white"
-            aria-label="Open menu"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="rounded-lg p-2 text-white transition-colors hover:bg-white/10"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
           >
             <QueueIcon size={23} />
           </button>
         </div>
 
-        {/* ───────────────── MAIN AREA ───────────────── */}
+        {/* MOBILE NAVIGATION */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute inset-0 bg-black/40"
+            />
 
+            <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0d2147] px-5 pb-6 pt-6 shadow-2xl">
+              <div className="flex items-center gap-3 px-1 pb-7">
+                <LogoIcon />
+                <div>
+                  <h1 className="text-[19px] font-extrabold leading-none text-white">
+                    Swasthya
+                  </h1>
+                  <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.09em] text-[#0fa59a]">
+                    Smart India Hackathon
+                  </p>
+                </div>
+              </div>
+
+              <nav className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => goTo("/doctor/dashboard")}
+                  className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"
+                >
+                  <HomeIcon size={20} />
+                  <span className="text-[15px] font-bold">Dashboard</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => goTo("/doctor/patients")}
+                  className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#9aabc5] transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <UsersIcon size={20} />
+                  <span className="text-[15px] font-bold">Patients</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => goTo("/doctor/queue")}
+                  className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#9aabc5] transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <QueueIcon size={20} />
+                  <span className="text-[15px] font-bold">Queue</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => goTo("/doctor/schedule")}
+                  className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#9aabc5] transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <CalendarIcon size={20} />
+                  <span className="text-[15px] font-bold">Schedule</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => goTo("/doctor/case-sheet")}
+                  className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#9aabc5] transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <ReportsIcon size={20} />
+                  <span className="text-[15px] font-bold">Reports</span>
+                </button>
+              </nav>
+
+              <div className="mt-auto">
+                <div className="mb-4 h-px bg-[#52627d]/50" />
+                <p className="text-[14px] font-bold text-white">Dr. Rohan Sharma</p>
+                <p className="mt-0.5 text-[11px] font-medium text-[#71819d]">
+                  MCI-2026-9485
+                </p>
+              </div>
+            </aside>
+          </div>
+        )}
+
+        {/* MAIN AREA */}
         <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
-          {/* Top header */}
-          <header className="flex h-[80px] items-center justify-between border-b border-[#dce4ef] bg-white px-6 sm:px-8 lg:px-10">
-            <h2 className="text-[25px] font-extrabold tracking-[-0.02em] text-[#102349]">
+
+          {/* HEADER */}
+          <header className="flex min-h-[80px] items-center justify-between gap-4 border-b border-[#dce4ef] bg-white px-5 py-4 sm:px-8 lg:px-10">
+            <h2 className="text-[21px] font-extrabold tracking-[-0.02em] text-[#102349] sm:text-[25px]">
               OPD Control Center
             </h2>
 
             <div className="flex items-center gap-5">
-              {/* Search */}
               <div className="hidden h-[38px] w-[280px] items-center gap-2 rounded-lg bg-[#f7f9fc] px-4 md:flex">
                 <SearchIcon size={18} />
 
@@ -400,7 +460,6 @@ function DoctorDashboard() {
                 />
               </div>
 
-              {/* Notification */}
               <button
                 type="button"
                 className="relative flex h-9 w-9 items-center justify-center text-[#102349]"
@@ -419,22 +478,22 @@ function DoctorDashboard() {
             </div>
           </header>
 
-          {/* Dashboard content */}
-          <section className="px-5 py-8 sm:px-8 lg:px-10">
+          {/* DASHBOARD */}
+          <section className="px-4 py-6 sm:px-8 sm:py-8 lg:px-10">
+
             {/* Welcome */}
             <div>
-              <h1 className="text-[31px] font-extrabold leading-tight tracking-[-0.025em] text-[#102349]">
+              <h1 className="text-[25px] font-extrabold leading-tight tracking-[-0.025em] text-[#102349] sm:text-[31px]">
                 Welcome back, Dr. Sharma
               </h1>
 
-              <p className="mt-1 text-[16px] font-medium text-[#667995]">
+              <p className="mt-1 max-w-3xl text-[14px] font-medium leading-relaxed text-[#667995] sm:text-[16px]">
                 Here is your clinical patient flow and AI automated pre-consult
                 stats for today.
               </p>
             </div>
 
-            {/* ───────────────── STATS ───────────────── */}
-
+            {/* STATS */}
             <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard
                 icon={<UsersStatIcon size={25} />}
@@ -477,12 +536,12 @@ function DoctorDashboard() {
               />
             </div>
 
-            {/* ───────────────── LOWER CONTENT ───────────────── */}
+            {/* LOWER CONTENT */}
+            <div className="mt-6 grid grid-cols-1 gap-6 xl:mt-8 xl:grid-cols-[minmax(0,1fr)_340px]">
 
-            <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
               {/* Queue card */}
               <div className="rounded-xl border border-[#dce4ef] bg-white p-5 sm:p-6">
-                {/* Header */}
+
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-extrabold text-[#102349]">
                     Today's Consult Queue
@@ -490,15 +549,14 @@ function DoctorDashboard() {
 
                   <button
                     type="button"
-                    onClick={() => navigate("/doctor/queue")}
-                    className="flex items-center gap-1 text-[13px] font-bold text-[#009c91] hover:text-[#007f77]"
+                    onClick={() => goTo("/doctor/queue")}
+                    className="flex items-center gap-1 text-[13px] font-bold text-[#009c91] transition-colors hover:text-[#007f77]"
                   >
                     View Full Queue
                     <ArrowRightIcon size={15} />
                   </button>
                 </div>
 
-                {/* Table */}
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[650px] border-collapse">
                     <thead>
@@ -522,7 +580,6 @@ function DoctorDashboard() {
                     </thead>
 
                     <tbody>
-                      {/* Patient 1 */}
                       <tr className="border-b border-[#dce4ef]">
                         <td className="px-4 py-4 text-[13px] font-bold text-[#102349]">
                           Priya Mehta, 34F
@@ -541,15 +598,14 @@ function DoctorDashboard() {
                         <td className="px-4 py-4">
                           <button
                             type="button"
-                            onClick={() => navigate("/doctor/case-sheet")}
-                            className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#142e5c]"
+                            onClick={() => goTo("/doctor/case-sheet")}
+                            className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition-colors hover:bg-[#17335f]"
                           >
                             View Case
                           </button>
                         </td>
                       </tr>
 
-                      {/* Patient 2 */}
                       <tr className="border-b border-[#dce4ef]">
                         <td className="px-4 py-4 text-[13px] font-bold text-[#102349]">
                           Amit Patel, 45M
@@ -568,15 +624,14 @@ function DoctorDashboard() {
                         <td className="px-4 py-4">
                           <button
                             type="button"
-                            onClick={() => navigate("/doctor/case-sheet")}
-                            className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#142e5c]"
+                            onClick={() => goTo("/doctor/case-sheet")}
+                            className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition-colors hover:bg-[#17335f]"
                           >
                             View Case
                           </button>
                         </td>
                       </tr>
 
-                      {/* Patient 3 */}
                       <tr className="border-b border-[#dce4ef]">
                         <td className="px-4 py-4 text-[13px] font-bold text-[#102349]">
                           Karan Singh, 61M
@@ -595,8 +650,8 @@ function DoctorDashboard() {
                         <td className="px-4 py-4">
                           <button
                             type="button"
-                            onClick={() => navigate("/doctor/case-sheet")}
-                            className="rounded-md bg-[#0f9f94] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#0b8a81]"
+                            onClick={() => goTo("/doctor/case-sheet")}
+                            className="rounded-md bg-[#0f9f94] px-4 py-2 text-[12px] font-bold text-white transition-colors hover:bg-[#0d8d84]"
                           >
                             Start Consult
                           </button>
@@ -633,35 +688,31 @@ function DoctorDashboard() {
                 </h2>
 
                 <div className="mt-4 space-y-3">
-                  {/* Register patient */}
+
                   <button
                     type="button"
-                    onClick={() => navigate("/doctor/patients")}
-                    className="flex h-[42px] w-full items-center gap-3 rounded-lg bg-[#c8f7ee] px-3.5 text-left text-[13px] font-bold text-[#078d84] transition hover:bg-[#b8f1e6]"
+                    className="flex h-[42px] w-full items-center gap-3 rounded-lg bg-[#c8f7ee] px-3.5 text-left text-[13px] font-bold text-[#078d84]"
                   >
                     <PlusIcon size={19} />
                     Register New Patient
                   </button>
 
-                  {/* Schedule */}
                   <button
                     type="button"
-                    onClick={() => navigate("/doctor/schedule")}
-                    className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-3.5 text-left text-[13px] font-bold text-[#102349] transition hover:bg-[#f1f5f9]"
+                    className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-3.5 text-left text-[13px] font-bold text-[#102349]"
                   >
                     <CalendarIcon size={18} />
                     View Weekly Schedule
                   </button>
 
-                  {/* Pending cases */}
                   <button
                     type="button"
-                    onClick={() => navigate("/doctor/case-sheet")}
-                    className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-3.5 text-left text-[13px] font-bold text-[#102349] transition hover:bg-[#f1f5f9]"
+                    className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-3.5 text-left text-[13px] font-bold text-[#102349]"
                   >
                     <ClipboardIcon size={18} />
                     Review 5 Pending Cases
                   </button>
+
                 </div>
               </div>
             </div>

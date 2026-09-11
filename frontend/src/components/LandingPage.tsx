@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from "../hooks/useTheme";
 import "./LandingPage.css";
 
 type IconName = "arrow" | "check" | "moon" | "sun" | "menu" | "close" | "mic" | "document" | "doctor";
@@ -39,12 +40,8 @@ const capabilities = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { dark, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dark, setDark] = useState(() => localStorage.getItem("swasthya-theme") === "dark");
-
-  useEffect(() => {
-    localStorage.setItem("swasthya-theme", dark ? "dark" : "light");
-  }, [dark]);
 
   const scrollTo = (id: string) => {
     setMenuOpen(false);
@@ -59,7 +56,7 @@ export default function LandingPage() {
       <header className="site-header">
         <button className="brand-button" onClick={() => scrollTo("home")} aria-label="Go to Swasthya home"><Brand /></button>
         <nav className="desktop-nav" aria-label="Main navigation"><button className="active" onClick={() => scrollTo("home")}>Home</button><button onClick={() => scrollTo("how-it-works")}>How it works</button><button onClick={() => scrollTo("for-doctors")}>For doctors</button><button onClick={() => scrollTo("for-patients")}>For patients</button><Link to="/about">About</Link></nav>
-        <div className="header-actions"><button className="theme-toggle" onClick={() => setDark((value) => !value)} aria-label={`Switch to ${dark ? "light" : "dark"} mode`} title={`Switch to ${dark ? "light" : "dark"} mode`}><Icon name={dark ? "sun" : "moon"} size={18} /></button><button className="login-link" onClick={goToRoleSelection}>Log in</button><button className="button button-small" onClick={goToRoleSelection}>Get started <Icon name="arrow" size={16} /></button></div>
+        <div className="header-actions"><button className="theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${dark ? "light" : "dark"} mode`} title={`Switch to ${dark ? "light" : "dark"} mode`}><Icon name={dark ? "sun" : "moon"} size={18} /></button><button className="login-link" onClick={goToRoleSelection}>Log in</button><button className="button button-small" onClick={goToRoleSelection}>Get started <Icon name="arrow" size={16} /></button></div>
         <button className="mobile-menu-button" onClick={() => setMenuOpen((value) => !value)} aria-label="Toggle navigation"><Icon name={menuOpen ? "close" : "menu"} /></button>
         {menuOpen && <nav className="mobile-nav" aria-label="Mobile navigation"><button onClick={() => scrollTo("home")}>Home</button><button onClick={() => scrollTo("how-it-works")}>How it works</button><button onClick={() => scrollTo("for-doctors")}>For doctors</button><button onClick={() => scrollTo("for-patients")}>For patients</button><Link to="/about" onClick={() => setMenuOpen(false)}>About</Link><button onClick={goToRoleSelection}>Get started</button></nav>}
       </header>
