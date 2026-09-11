@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { auth, getFirebaseSetupMessage, isFirebaseConfigured } from '../services/firebase';
+import { auth, getFirebaseAuthErrorMessage, getFirebaseSetupMessage } from '../services/firebase';
 
 function PatientLogin() {
   const navigate = useNavigate();
@@ -22,14 +22,6 @@ function PatientLogin() {
   const [error, setError] = useState<string>('');
   const [notice, setNotice] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  const getAuthError = (reason: unknown): string => {
-    if (!isFirebaseConfigured || !auth) return getFirebaseSetupMessage();
-    if (reason instanceof Error && reason.message.includes('auth/invalid-credential')) return 'Incorrect email or password.';
-    if (reason instanceof Error && reason.message.includes('auth/email-already-in-use')) return 'An account already exists for this email.';
-    if (reason instanceof Error && reason.message.includes('auth/weak-password')) return 'Use a password with at least 6 characters.';
-    return reason instanceof Error ? reason.message.replace('Firebase: ', '') : 'Unable to authenticate. Please try again.';
-  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -61,7 +53,7 @@ function PatientLogin() {
       }
       navigate('/patient/dashboard');
     } catch (reason) {
-      setError(getAuthError(reason));
+      setError(getFirebaseAuthErrorMessage(reason));
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +74,7 @@ function PatientLogin() {
       await sendPasswordResetEmail(auth, identifier);
       setNotice('Password-reset email sent. Check your inbox and spam folder.');
     } catch (reason) {
-      setError(getAuthError(reason));
+      setError(getFirebaseAuthErrorMessage(reason));
     }
   };
 
@@ -97,7 +89,7 @@ function PatientLogin() {
       await signInWithPopup(auth, new GoogleAuthProvider());
       navigate('/patient/dashboard');
     } catch (reason) {
-      setError(getAuthError(reason));
+      setError(getFirebaseAuthErrorMessage(reason));
     } finally {
       setIsSubmitting(false);
     }

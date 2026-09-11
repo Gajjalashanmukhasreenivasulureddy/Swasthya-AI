@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth, getFirebaseSetupMessage } from '../services/firebase';
+import { auth, getFirebaseAuthErrorMessage, getFirebaseSetupMessage } from '../services/firebase';
 
 function DoctorLogin() {
   const navigate = useNavigate();
@@ -53,8 +53,7 @@ function DoctorLogin() {
       }
       navigate('/doctor/dashboard');
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : 'Unable to sign in. Please try again.';
-      setError(message.includes('auth/invalid-credential') ? 'Incorrect email or password.' : message.replace('Firebase: ', ''));
+      setError(getFirebaseAuthErrorMessage(reason));
     } finally {
       setIsSubmitting(false);
     }
@@ -75,8 +74,7 @@ function DoctorLogin() {
       await sendPasswordResetEmail(auth, email);
       setNotice('Password-reset email sent. Check your inbox and spam folder.');
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : 'Unable to send the password-reset email.';
-      setError(message.replace('Firebase: ', ''));
+      setError(getFirebaseAuthErrorMessage(reason));
     }
   };
 
