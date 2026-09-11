@@ -1,16 +1,83 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth, getFirebaseSetupMessage } from '../services/firebase';
 
 function DoctorLogin() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState<string>('');
+  const [doctorName, setDoctorName] = useState<string>('');
   const [medicalLicenseId, setMedicalLicenseId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [notice, setNotice] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleDoctorLogin = (e: FormEvent<HTMLFormElement>): void => {
+  const handleDoctorLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    navigate('/doctor/dashboard');
+    setError('');
+    setNotice('');
+
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (isRegistering && !doctorName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+    if (isRegistering && !medicalLicenseId.trim()) {
+      setError('Please enter your medical license ID.');
+      return;
+    }
+    if (isRegistering && password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (!auth) {
+      setError(getFirebaseSetupMessage());
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (isRegistering) {
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(credential.user, { displayName: doctorName.trim() });
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      navigate('/doctor/dashboard');
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : 'Unable to sign in. Please try again.';
+      setError(message.includes('auth/invalid-credential') ? 'Incorrect email or password.' : message.replace('Firebase: ', ''));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async (): Promise<void> => {
+    setError('');
+    setNotice('');
+    if (!email.includes('@')) {
+      setError('Enter your account email address first, then select Forgot Password.');
+      return;
+    }
+    if (!auth) {
+      setError(getFirebaseSetupMessage());
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setNotice('Password-reset email sent. Check your inbox and spam folder.');
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : 'Unable to send the password-reset email.';
+      setError(message.replace('Firebase: ', ''));
+    }
   };
 
   return (
@@ -115,35 +182,57 @@ function DoctorLogin() {
 
           {/* Tabs */}
           <div className="flex items-center gap-8 border-b border-slate-200 mb-8">
-            <span className="relative pb-4 text-sm font-semibold text-teal-600">
+            <button type="button" onClick={() => { setIsRegistering(false); setError(''); }} className={`relative pb-4 text-sm font-semibold ${isRegistering ? 'text-slate-400' : 'text-teal-600'}`}>
               Sign In
-              <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-teal-600" />
-            </span>
+              {!isRegistering && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-teal-600" />}
+            </button>
 
-            <span className="pb-4 text-sm font-medium text-slate-400">
+            <button type="button" onClick={() => { setIsRegistering(true); setError(''); }} className={`relative pb-4 text-sm font-semibold ${isRegistering ? 'text-teal-600' : 'text-slate-400'}`}>
               New Doctor Registry
-            </span>
+              {isRegistering && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-teal-600" />}
+            </button>
           </div>
 
           <form onSubmit={handleDoctorLogin} className="space-y-6">
+            {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            {notice && <p role="status" className="rounded-lg bg-teal-50 px-3 py-2 text-sm text-teal-700">{notice}</p>}
+            {isRegistering && (
+              <>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Full Name</label>
+                  <input type="text" placeholder="Dr. Priya Sharma" value={doctorName} onChange={(e: ChangeEvent<HTMLInputElement>) => setDoctorName(e.target.value)} required className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Medical License ID</label>
+                  <input type="text" placeholder="e.g. MCI-2026-9485" value={medicalLicenseId} onChange={(e: ChangeEvent<HTMLInputElement>) => setMedicalLicenseId(e.target.value)} required className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" />
+                </div>
+              </>
+            )}
 
             {/* Medical License */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
-                Medical License ID / Email
+                Email Address
               </label>
 
               <input
                 type="text"
-                placeholder="e.g. MCI-2026-9485"
-                value={medicalLicenseId}
+                placeholder="doctor@clinic.com"
+                value={email}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setMedicalLicenseId(e.target.value)
+                  setEmail(e.target.value)
                 }
                 required
                 className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
               />
             </div>
+
+            {isRegistering && (
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700">Confirm Password</label>
+                <input type={showPassword ? 'text' : 'password'} placeholder="Confirm your password" value={confirmPassword} onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)} required className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" />
+              </div>
+            )}
 
             {/* Password */}
             <div className="space-y-2">
@@ -152,12 +241,15 @@ function DoctorLogin() {
                   Security PIN / Password
                 </label>
 
-                <a
-                  href="#"
-                  className="text-xs font-medium text-teal-600 hover:text-teal-700"
-                >
-                  Forgot Password?
-                </a>
+                {!isRegistering && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs font-medium text-teal-600 hover:text-teal-700"
+                  >
+                    Forgot Password?
+                  </button>
+                )}
               </div>
 
               <div className="relative">
@@ -186,9 +278,10 @@ function DoctorLogin() {
             {/* Submit */}
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full rounded-lg bg-teal-600 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 active:scale-[0.99]"
             >
-              Sign In to OPD Dashboard
+              {isSubmitting ? (isRegistering ? 'Registering…' : 'Signing in…') : (isRegistering ? 'Register Doctor Account' : 'Sign In to OPD Dashboard')}
             </button>
           </form>
 

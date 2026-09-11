@@ -1,6 +1,15 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  updateProfile,
+} from 'firebase/auth';
+import { auth, getFirebaseSetupMessage, isFirebaseConfigured } from '../services/firebase';
 
 function PatientLogin() {
   const navigate = useNavigate();
@@ -10,16 +19,88 @@ function PatientLogin() {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [notice, setNotice] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const getAuthError = (reason: unknown): string => {
+    if (!isFirebaseConfigured || !auth) return getFirebaseSetupMessage();
+    if (reason instanceof Error && reason.message.includes('auth/invalid-credential')) return 'Incorrect email or password.';
+    if (reason instanceof Error && reason.message.includes('auth/email-already-in-use')) return 'An account already exists for this email.';
+    if (reason instanceof Error && reason.message.includes('auth/weak-password')) return 'Use a password with at least 6 characters.';
+    return reason instanceof Error ? reason.message.replace('Firebase: ', '') : 'Unable to authenticate. Please try again.';
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    setError('');
+    setNotice('');
 
     if (!isLogin && password !== confirmPassword) {
-      alert('Passwords do not match.');
+      setError('Passwords do not match.');
       return;
     }
 
-    navigate('/patient/dashboard');
+    if (!identifier.includes('@')) {
+      setError('Please use an email address. SMS sign-in needs Firebase Phone Authentication setup.');
+      return;
+    }
+
+    if (!auth) {
+      setError(getFirebaseSetupMessage());
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, identifier, password);
+      } else {
+        const credential = await createUserWithEmailAndPassword(auth, identifier, password);
+        await updateProfile(credential.user, { displayName: fullName });
+      }
+      navigate('/patient/dashboard');
+    } catch (reason) {
+      setError(getAuthError(reason));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async (): Promise<void> => {
+    setError('');
+    setNotice('');
+    if (!identifier.includes('@')) {
+      setError('Enter your account email address first, then select Forgot Password.');
+      return;
+    }
+    if (!auth) {
+      setError(getFirebaseSetupMessage());
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, identifier);
+      setNotice('Password-reset email sent. Check your inbox and spam folder.');
+    } catch (reason) {
+      setError(getAuthError(reason));
+    }
+  };
+
+  const handleGoogleSignIn = async (): Promise<void> => {
+    if (!auth) {
+      setError(getFirebaseSetupMessage());
+      return;
+    }
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      navigate('/patient/dashboard');
+    } catch (reason) {
+      setError(getAuthError(reason));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -94,6 +175,8 @@ function PatientLogin() {
         </div>
 
         <form onSubmit={handleSubmit} className="mt-7">
+          {error && <p role="alert" className="mb-5 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+          {notice && <p role="status" className="mb-5 rounded-lg bg-teal-50 px-3 py-2 text-sm text-teal-700">{notice}</p>}
           {isLogin ? (
             <>
               <div className="mb-5">
@@ -119,12 +202,13 @@ function PatientLogin() {
                     Password
                   </label>
 
-                  <a
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
                     className="text-xs font-medium text-teal-600 hover:text-teal-700"
                   >
                     Forgot Password?
-                  </a>
+                  </button>
                 </div>
 
                 <input
@@ -153,9 +237,10 @@ function PatientLogin() {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full rounded-lg bg-teal-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 active:scale-[0.99]"
               >
-                Secure Login
+                {isSubmitting ? 'Signing in…' : 'Secure Login'}
               </button>
             </>
           ) : (
@@ -242,9 +327,10 @@ function PatientLogin() {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full rounded-lg bg-teal-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 active:scale-[0.99]"
               >
-                Create Account
+                {isSubmitting ? 'Creating account…' : 'Create Account'}
               </button>
             </>
           )}
@@ -262,6 +348,9 @@ function PatientLogin() {
 
         <div className="grid grid-cols-2 gap-3">
           <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isSubmitting}
             className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
             {/* Google Logo SVG */}

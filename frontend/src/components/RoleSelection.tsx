@@ -22,12 +22,12 @@ function RoleSelection() {
 
       <div className="mt-10 grid w-full max-w-[760px] grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="rounded-xl border border-[#d9e8e3] bg-white p-7 text-center shadow-[0_12px_30px_rgb(22_60_56_/_6%)]">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#e7eeec]">
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A202C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#dcf6ef]">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#009688" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           </div>
           <h3 className="text-xl font-bold">I am a Doctor</h3>
           <p className="my-3 min-h-14 text-sm leading-6 text-[#607470]">Access your OPD clinic queue, view structured pre-consult summaries, and manage diagnostic timelines.</p>
-          <button className="w-full rounded-md bg-[#163c38] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#0d9488]" onClick={() => navigate('/doctor-login')}>
+          <button className="w-full rounded-md bg-[#0d9488] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#087b72]" onClick={() => navigate('/doctor-login')}>
             Access Doctor Portal
           </button>
         </div>
