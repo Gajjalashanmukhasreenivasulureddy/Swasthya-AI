@@ -2,6 +2,7 @@ export {};
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import type { ReactNode } from "react";
+import Sidebar from "../components/Sidebar";
 
 type IconProps = {
   size?: number;
@@ -138,11 +139,12 @@ function PatientQueue() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
+      <Sidebar role="doctor" />
       <div className="flex min-h-screen">
 
         {/* SIDEBAR */}
 
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#0d2147] lg:flex">
+        <aside className="hidden">
 
           <div className="flex items-center gap-3 px-6 pb-7 pt-6">
             <LogoIcon />
@@ -221,7 +223,7 @@ function PatientQueue() {
 
         {/* MOBILE HEADER */}
 
-        <div className="fixed left-0 right-0 top-0 z-40 flex h-[70px] items-center justify-between bg-[#0d2147] px-5 lg:hidden">
+        <div className="hidden">
 
           <div className="flex items-center gap-3">
             <LogoIcon />
@@ -253,7 +255,7 @@ function PatientQueue() {
 
                 {/* MOBILE NAVIGATION */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button
               type="button"
               aria-label="Close menu"

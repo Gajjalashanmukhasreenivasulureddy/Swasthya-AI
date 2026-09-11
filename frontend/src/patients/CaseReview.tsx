@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 
 function CaseReview() {
   const navigate = useNavigate();
@@ -11,9 +12,10 @@ function CaseReview() {
   };
   return (
     <div className="min-h-screen bg-[#f7f9fc] text-[#102349]">
+      <Sidebar role="patient" />
 
       {/* ================= SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 z-20 hidden h-screen w-[260px] flex-col bg-[#0b1d41] text-white lg:flex">
+      <aside className="hidden">
 
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-6">
@@ -55,7 +57,7 @@ function CaseReview() {
 
 
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
             <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0b1d41] px-6 py-6 text-white shadow-2xl">
               <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#0fa397]">✚</div><div><div className="text-[20px] font-extrabold">Swasthya</div><div className="text-[8px] font-bold tracking-[0.5px] text-[#0fa397]">SMART INDIA HACKATHON</div></div></div>
