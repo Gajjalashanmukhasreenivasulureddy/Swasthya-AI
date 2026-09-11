@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { getDoctorDashboard, type DoctorDashboard as DoctorDashboardData } from "../services/api";
+import Sidebar from "../components/Sidebar";
 
 type IconProps = {
   size?: number;
@@ -245,6 +247,11 @@ const StatusBadge = ({
 function DoctorDashboard() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dashboard, setDashboard] = useState<DoctorDashboardData | null>(null);
+
+  useEffect(() => {
+    getDoctorDashboard().then(setDashboard).catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -253,10 +260,11 @@ function DoctorDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
+      <Sidebar role="doctor" />
       <div className="flex min-h-screen">
 
         {/* SIDEBAR */}
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#0d2147] lg:flex">
+        <aside className="hidden">
           <div className="flex items-center gap-3 px-6 pb-7 pt-6">
             <LogoIcon />
 
@@ -333,7 +341,7 @@ function DoctorDashboard() {
         </aside>
 
         {/* MOBILE TOP BAR */}
-        <div className="fixed left-0 right-0 top-0 z-40 flex h-[70px] items-center justify-between border-b border-[#dce4ef] bg-[#0d2147] px-5 lg:hidden">
+        <div className="hidden">
           <div className="flex items-center gap-3">
             <LogoIcon />
 
@@ -361,7 +369,7 @@ function DoctorDashboard() {
 
         {/* MOBILE NAVIGATION */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button
               type="button"
               aria-label="Close menu"
@@ -500,7 +508,7 @@ function DoctorDashboard() {
                 iconBg="bg-[#e1f3fc]"
                 iconColor="text-[#06a9a0]"
                 label="Total Patients"
-                value="248"
+                value={dashboard ? String(dashboard.total_assigned_cases) : "0"}
                 description="Active in registry"
               />
 
@@ -509,8 +517,8 @@ function DoctorDashboard() {
                 iconBg="bg-[#d6faf4]"
                 iconColor="text-[#049f98]"
                 label="Today's Queue"
-                value="12"
-                description="3 remaining to consult"
+                value={dashboard ? String(dashboard.todays_appointments_count) : "0"}
+                description="Appointments today"
                 badge="Live Flow"
                 badgeClass="bg-[#c9f7ef] text-[#067f78]"
               />
@@ -520,7 +528,7 @@ function DoctorDashboard() {
                 iconBg="bg-[#fff4ca]"
                 iconColor="text-[#0aa099]"
                 label="Pending Case Sheets"
-                value="5"
+                value={dashboard ? String(dashboard.awaiting_review_cases) : "0"}
                 description="Requires doctor review"
                 badge="Review Needed"
                 badgeClass="bg-[#fff1c7] text-[#102349]"
@@ -531,8 +539,8 @@ function DoctorDashboard() {
                 iconBg="bg-[#d7f8e9]"
                 iconColor="text-[#09a08f]"
                 label="Completed Consults"
-                value="7"
-                description="Done this morning"
+                value={dashboard ? String(dashboard.completed_cases) : "0"}
+                description="Completed cases"
               />
             </div>
 

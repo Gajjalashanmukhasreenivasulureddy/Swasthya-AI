@@ -1,7 +1,9 @@
 export {};
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { getDoctorCases, type CaseRecord } from "../services/api";
+import Sidebar from "../components/Sidebar";
 
 type IconProps = {
   size?: number;
@@ -129,6 +131,11 @@ const LogoIcon = () => (
 function PatientQueue() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cases, setCases] = useState<CaseRecord[]>([]);
+
+  useEffect(() => {
+    getDoctorCases().then(({ cases: currentCases }) => setCases(currentCases)).catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -138,11 +145,12 @@ function PatientQueue() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
+      <Sidebar role="doctor" />
       <div className="flex min-h-screen">
 
         {/* SIDEBAR */}
 
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#0d2147] lg:flex">
+        <aside className="hidden">
 
           <div className="flex items-center gap-3 px-6 pb-7 pt-6">
             <LogoIcon />
@@ -221,7 +229,7 @@ function PatientQueue() {
 
         {/* MOBILE HEADER */}
 
-        <div className="fixed left-0 right-0 top-0 z-40 flex h-[70px] items-center justify-between bg-[#0d2147] px-5 lg:hidden">
+        <div className="hidden">
 
           <div className="flex items-center gap-3">
             <LogoIcon />
@@ -253,7 +261,7 @@ function PatientQueue() {
 
                 {/* MOBILE NAVIGATION */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button
               type="button"
               aria-label="Close menu"
@@ -387,7 +395,7 @@ function PatientQueue() {
                   </h1>
 
                   <span className="rounded-full bg-[#c9f7ef] px-3 py-1 text-[12px] font-extrabold text-[#009c91]">
-                    18 Patients
+                    {cases.length || 0} Patients
                   </span>
 
                 </div>
@@ -427,7 +435,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    18
+                    {cases.length || 0}
                   </p>
                 </div>
 
@@ -451,7 +459,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    2
+                    {cases.filter((item) => ["submitted", "under_review"].includes(item.status)).length}
                   </p>
                 </div>
 
@@ -475,7 +483,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    0
+                    {cases.filter((item) => item.status === "under_review").length}
                   </p>
                 </div>
 
@@ -499,7 +507,7 @@ function PatientQueue() {
                   </p>
 
                   <p className="mt-1 text-[31px] font-extrabold leading-none text-[#102349]">
-                    0
+                    {cases.filter((item) => item.status === "completed").length}
                   </p>
                 </div>
 

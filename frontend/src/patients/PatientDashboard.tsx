@@ -1,7 +1,9 @@
 export {};
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getPatientAppointments, getPatientCases, getPatientProfile, type Appointment, type CaseRecord, type PatientProfile } from "../services/api";
+import Sidebar from "../components/Sidebar";
 
 type IconProps = {
   size?: number;
@@ -187,6 +189,19 @@ const StatCard = ({
 function PatientDashboard() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profile, setProfile] = useState<PatientProfile | null>(null);
+  const [cases, setCases] = useState<CaseRecord[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    Promise.all([getPatientProfile(), getPatientCases(), getPatientAppointments()])
+      .then(([currentProfile, currentCases, currentAppointments]) => {
+        setProfile(currentProfile);
+        setCases(currentCases);
+        setAppointments(currentAppointments);
+      })
+      .catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -195,10 +210,11 @@ function PatientDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
+      <Sidebar role="patient" />
       <div className="flex min-h-screen">
         {/* SIDEBAR */}
 
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col bg-[#0d2147] lg:flex">
+        <aside className="hidden">
           {/* Logo */}
           <div className="flex items-center gap-3 px-6 pb-7 pt-6">
             <LogoIcon />
@@ -217,7 +233,7 @@ function PatientDashboard() {
           {/* Navigation */}
                     <nav className="flex flex-col gap-1">
             <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"><HomeIcon size={20} /><span className="text-[15px] font-bold">Dashboard</span></button>
-            <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><PlusIcon size={20} /><span className="text-[15px] font-bold">New Case</span></button>
+            <button type="button" onClick={() => goTo("/patient/case-taking?new=1")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><PlusIcon size={20} /><span className="text-[15px] font-bold">New Case</span></button>
             <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><CalendarIcon size={20} /><span className="text-[15px] font-bold">Appointments</span></button>
             <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><RecordsIcon size={20} /><span className="text-[15px] font-bold">Medical Records</span></button>
             <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><UploadIcon size={20} /><span className="text-[15px] font-bold">Upload Reports</span></button>
@@ -227,7 +243,7 @@ function PatientDashboard() {
           <div className="mt-auto px-6 pb-6">
             <div className="mb-4 h-px bg-[#52627d]/50" />
 
-            <p className="text-[14px] font-bold text-white">Ananya Patel</p>
+            <p className="text-[14px] font-bold text-white">{profile ? `${profile.first_name} ${profile.last_name}` : "Ananya Patel"}</p>
 
             <p className="mt-0.5 text-[11px] font-medium text-[#71819d]">
               PID-2026-0892
@@ -237,7 +253,7 @@ function PatientDashboard() {
 
         {/* MOBILE HEADER */}
 
-        <div className="fixed left-0 right-0 top-0 z-40 flex h-[70px] items-center justify-between bg-[#0d2147] px-5 lg:hidden">
+        <div className="hidden">
           <div className="flex items-center gap-3">
             <LogoIcon />
 
@@ -263,13 +279,13 @@ function PatientDashboard() {
 
         {/* MOBILE NAVIGATION */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button type="button" aria-label="Close menu" onClick={() => setMobileMenuOpen(false)} className="absolute inset-0 bg-black/40" />
             <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0d2147] px-5 pb-6 pt-6 shadow-2xl">
               <div className="flex items-center gap-3 px-1 pb-7"><LogoIcon /><div><h1 className="text-[19px] font-extrabold leading-none text-white">Swasthya</h1><p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.09em] text-[#0fa59a]">Smart India Hackathon</p></div></div>
               <nav className="flex flex-col gap-1">
             <button type="button" onClick={() => goTo("/patient/dashboard")} className="flex h-11 w-full items-center gap-3 rounded-lg bg-[#109f96] px-4 text-left text-white"><HomeIcon size={20} /><span className="text-[15px] font-bold">Dashboard</span></button>
-            <button type="button" onClick={() => goTo("/patient/case-taking")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><PlusIcon size={20} /><span className="text-[15px] font-bold">New Case</span></button>
+            <button type="button" onClick={() => goTo("/patient/case-taking?new=1")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><PlusIcon size={20} /><span className="text-[15px] font-bold">New Case</span></button>
             <button type="button" onClick={() => goTo("/patient/case-review")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><CalendarIcon size={20} /><span className="text-[15px] font-bold">Appointments</span></button>
             <button type="button" onClick={() => goTo("/patient/medical-records")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><RecordsIcon size={20} /><span className="text-[15px] font-bold">Medical Records</span></button>
             <button type="button" onClick={() => goTo("/patient/upload-reports")} className="flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left text-[#71819d] transition hover:bg-white/5 hover:text-white"><UploadIcon size={20} /><span className="text-[15px] font-bold">Upload Reports</span></button>
@@ -281,7 +297,7 @@ function PatientDashboard() {
 
         {/* MAIN CONTENT */}
 
-        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[248px] lg:pt-0">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
           {/* HEADER */}
 
           <header className="flex h-[76px] items-center justify-between border-b border-[#dce4ef] bg-white px-6 sm:px-8 lg:px-10">
@@ -315,7 +331,7 @@ function PatientDashboard() {
               </button>
 
               <p className="hidden text-[14px] font-extrabold text-[#102349] sm:block">
-                Ananya Patel
+                 {profile ? `${profile.first_name} ${profile.last_name}` : "Ananya Patel"}
               </p>
             </div>
           </header>
@@ -344,8 +360,8 @@ function PatientDashboard() {
                 iconBg="bg-[#d5faf2]"
                 iconColor="text-[#05a095]"
                 label="Active Cases"
-                value="2"
-                description="1 newly submitted"
+                value={String(cases.length)}
+                description={`${cases.filter((item) => item.status === "submitted").length} newly submitted`}
               />
 
               <StatCard
@@ -353,8 +369,8 @@ function PatientDashboard() {
                 iconBg="bg-[#e0f1fc]"
                 iconColor="text-[#087da9]"
                 label="Upcoming Visits"
-                value="1"
-                description="Tomorrow, 10:30 AM"
+                value={String(appointments.filter((item) => !["cancelled", "completed"].includes(item.status)).length)}
+                description={appointments[0] ? new Date(appointments[0].scheduled_start).toLocaleString() : "No appointment scheduled"}
               />
 
               <StatCard
@@ -391,7 +407,7 @@ function PatientDashboard() {
 
                   <button
                     type="button"
-                    onClick={() => goTo("/patient/case-taking")}
+                    onClick={() => goTo("/patient/case-taking?new=1")}
                     className="min-h-[79px] rounded-lg bg-[#109f96] px-5 py-4 text-left text-white transition hover:bg-[#0b8d84]"
                   >
                     <p className="text-[15px] font-extrabold">
@@ -423,6 +439,7 @@ function PatientDashboard() {
 
                   <button
                     type="button"
+                    onClick={() => goTo("/patient/case-review")}
                     className="min-h-[79px] rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-5 py-4 text-left transition hover:bg-[#f1f5f9]"
                   >
                     <p className="text-[15px] font-extrabold text-[#102349]">
@@ -438,6 +455,7 @@ function PatientDashboard() {
 
                   <button
                     type="button"
+                    onClick={() => goTo("/patient/dashboard")}
                     className="min-h-[79px] rounded-lg border border-[#dce4ef] bg-[#f8fafc] px-5 py-4 text-left transition hover:bg-[#f1f5f9]"
                   >
                     <p className="text-[15px] font-extrabold text-[#102349]">
@@ -510,7 +528,7 @@ function PatientDashboard() {
                 </button>
               </div>
 
-              <div className="mt-5 overflow-x-auto">
+                <div className="mt-5 overflow-x-auto">
                 <table className="w-full min-w-[800px] border-collapse">
                   <thead>
                     <tr className="bg-[#f7f9fb]">
@@ -537,6 +555,15 @@ function PatientDashboard() {
                   </thead>
 
                   <tbody>
+                      {cases.length > 0 && cases.slice(0, 4).map((item) => (
+                        <tr className="border-b border-[#dce4ef]" key={item.id}>
+                          <td className="px-4 py-4 text-[13px] font-extrabold text-[#102349]">{item.id.slice(0, 8).toUpperCase()}</td>
+                          <td className="px-4 py-4 text-[13px] font-medium text-[#102349]">{item.chief_complaint}</td>
+                          <td className="px-4 py-4 text-[13px] font-medium text-[#71819d]">{item.created_at ? new Date(item.created_at).toLocaleDateString() : "-"}</td>
+                          <td className="px-4 py-4"><span className="inline-flex min-w-[152px] justify-center rounded-md bg-[#e0f1fc] px-3 py-1 text-[12px] font-bold text-[#087da9]">{item.status}</span></td>
+                          <td className="px-4 py-4"><button type="button" onClick={() => { localStorage.setItem("swasthya-current-case", item.id); goTo("/patient/case-review"); }} className="rounded-md bg-[#0d2147] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#142e5c]">View Details</button></td>
+                        </tr>
+                      ))}
                     {/* Case 1 */}
 
                     <tr className="border-b border-[#dce4ef]">

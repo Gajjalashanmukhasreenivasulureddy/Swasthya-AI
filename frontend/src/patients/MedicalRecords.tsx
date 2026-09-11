@@ -1,6 +1,8 @@
 export {};
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getPatientRecords } from "../services/api";
+import Sidebar from "../components/Sidebar";
 const Icon = ({
   name,
   size = 20,
@@ -246,6 +248,11 @@ const MedicalRecordCard = ({
 function MedicalRecords() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [records, setRecords] = useState<Record<string, unknown>[]>([]);
+
+  useEffect(() => {
+    getPatientRecords().then(setRecords).catch(() => undefined);
+  }, []);
 
   const goTo = (path: string) => {
     setMobileMenuOpen(false);
@@ -254,9 +261,10 @@ function MedicalRecords() {
 
   return (
     <div className="min-h-screen bg-[#f7f9fc] font-['Outfit'] text-[#102349]">
+      <Sidebar role="patient" />
       <div className="flex min-h-screen">
         {/* SIDEBAR */}
-        <aside className="fixed left-0 top-0 z-20 hidden h-screen w-[260px] flex-col bg-[#091c42] px-6 py-6 lg:flex">
+        <aside className="hidden">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0da69a] text-white">
@@ -277,7 +285,7 @@ function MedicalRecords() {
           {/* Navigation */}
           <nav className="mt-12 flex flex-col gap-2">
             <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-            <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking")} />
+            <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking?new=1")} />
             <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
             <SidebarItem icon="chart" label="Medical Records" active onClick={() => goTo("/patient/medical-records")} />
             <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
@@ -296,13 +304,13 @@ function MedicalRecords() {
         </aside>
 
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
             <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#091c42] px-6 py-6 text-white shadow-2xl">
               <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0da69a]"><Icon name="truck" size={21} /></div><div><div className="text-[19px] font-extrabold">Swasthya</div><div className="mt-1 text-[8px] font-bold tracking-[0.08em] text-[#10aaa0]">SMART INDIA HACKATHON</div></div></div>
               <nav className="mt-10 flex flex-col gap-2">
                 <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-                <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking")} />
+                <SidebarItem icon="plus" label="New Case" onClick={() => goTo("/patient/case-taking?new=1")} />
                 <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
                 <SidebarItem icon="chart" label="Medical Records" active onClick={() => goTo("/patient/medical-records")} />
                 <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
@@ -374,16 +382,16 @@ function MedicalRecords() {
 
             {/* Records */}
             <div className="mt-7 flex flex-col gap-6">
-              <MedicalRecordCard
-                title="Allergic Bronchitis"
-                subtitle="First OPD Consult • Verified on Oct 12, 2026"
-                expanded
-              />
-
-              <MedicalRecordCard
-                title="Routine Physical Examination"
-                subtitle="Annual Health Checkup • Verified on Sep 18, 2026"
-              />
+              {(records.length > 0 ? records : [
+                { title: "No medical records yet", record_type: "", recorded_at: null }
+              ]).map((record, index) => (
+                <MedicalRecordCard
+                  key={String(record.id || index)}
+                  title={String(record.title || "Medical record")}
+                  subtitle={`${String(record.record_type || "Clinical record")} ${record.recorded_at ? `• ${new Date(String(record.recorded_at)).toLocaleDateString()}` : ""}`}
+                  expanded={index === 0}
+                />
+              ))}
             </div>
           </section>
         </main>
