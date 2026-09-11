@@ -1,6 +1,7 @@
 export {};
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SharedSidebar from "../components/Sidebar";
 
 function Icon({
   name,
@@ -177,45 +178,6 @@ function SidebarItem({
   );
 }
 
-function Sidebar() {
-  const navigate = useNavigate();
-  const goTo = (path: string) => navigate(path);
-  return (
-    <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col bg-[#0b1d40] px-6 py-6 lg:flex">
-      <Logo />
-
-      <nav className="mt-8 flex flex-col gap-2">
-        <SidebarItem icon="home" label="Dashboard" onClick={() => goTo("/patient/dashboard")} />
-
-        <SidebarItem
-          icon="plus"
-          label="New Case"
-          active
-          onClick={() => goTo("/patient/case-taking")}
-        />
-
-        <SidebarItem icon="calendar" label="Appointments" onClick={() => goTo("/patient/case-review")} />
-
-        <SidebarItem icon="records" label="Medical Records" onClick={() => goTo("/patient/medical-records")} />
-
-        <SidebarItem icon="upload" label="Upload Reports" onClick={() => goTo("/patient/upload-reports")} />
-
-        
-      </nav>
-
-      <div className="mt-auto border-t border-[#43516c] pt-5">
-        <div className="text-[14px] font-extrabold text-white">
-          Ananya Patel
-        </div>
-
-        <div className="mt-1 text-[11px] font-medium text-[#687995]">
-          PID-2026-0892
-        </div>
-      </div>
-    </aside>
-  );
-}
-
 function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-10 flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:left-[260px] lg:right-0 lg:px-10">
@@ -319,7 +281,7 @@ export default function AICaseTaking() {
         <button type="button" onClick={() => setMobileMenuOpen(true)} className="rounded-lg p-2 text-white" aria-label="Open menu">☰</button>
       </div>
 
-      {mobileMenuOpen && (
+      {false && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
           <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0b1d40] px-6 py-6 text-white shadow-2xl">
@@ -337,7 +299,7 @@ export default function AICaseTaking() {
       )}
 
     <div className="min-h-screen bg-[#f7f9fc] font-['Outfit',sans-serif] text-[#102349]">
-      <Sidebar />
+      <SharedSidebar role="patient" />
 
       <Header />
 
