@@ -1,8 +1,13 @@
 export {};
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { getPatientAppointments, getPatientCases, getPatientProfile, type Appointment, type CaseRecord, type PatientProfile } from "../services/api";
+=======
+import { useState } from "react";
+import Sidebar from "../components/Sidebar";
+>>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 
 type IconProps = {
   size?: number;
@@ -209,10 +214,11 @@ function PatientDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-[Outfit,sans-serif] text-[#102349]">
+      <Sidebar role="patient" />
       <div className="flex min-h-screen">
         {/* SIDEBAR */}
 
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col bg-[#0d2147] lg:flex">
+        <aside className="hidden">
           {/* Logo */}
           <div className="flex items-center gap-3 px-6 pb-7 pt-6">
             <LogoIcon />
@@ -251,7 +257,7 @@ function PatientDashboard() {
 
         {/* MOBILE HEADER */}
 
-        <div className="fixed left-0 right-0 top-0 z-40 flex h-[70px] items-center justify-between bg-[#0d2147] px-5 lg:hidden">
+        <div className="hidden">
           <div className="flex items-center gap-3">
             <LogoIcon />
 
@@ -277,7 +283,7 @@ function PatientDashboard() {
 
         {/* MOBILE NAVIGATION */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="hidden">
             <button type="button" aria-label="Close menu" onClick={() => setMobileMenuOpen(false)} className="absolute inset-0 bg-black/40" />
             <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0d2147] px-5 pb-6 pt-6 shadow-2xl">
               <div className="flex items-center gap-3 px-1 pb-7"><LogoIcon /><div><h1 className="text-[19px] font-extrabold leading-none text-white">Swasthya</h1><p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.09em] text-[#0fa59a]">Smart India Hackathon</p></div></div>
@@ -295,7 +301,7 @@ function PatientDashboard() {
 
         {/* MAIN CONTENT */}
 
-        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[248px] lg:pt-0">
+        <main className="min-w-0 flex-1 pt-[70px] lg:ml-[260px] lg:pt-0">
           {/* HEADER */}
 
           <header className="flex h-[76px] items-center justify-between border-b border-[#dce4ef] bg-white px-6 sm:px-8 lg:px-10">

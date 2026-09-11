@@ -1,6 +1,7 @@
 export {};
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 
 function UploadReports() {
   const navigate = useNavigate();
@@ -66,9 +67,10 @@ function UploadReports() {
 
   return (
     <div className="min-h-screen bg-[#f7f9fc] text-[#102349]">
+      <Sidebar role="patient" />
 
       {/* ================= SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 z-20 hidden h-screen w-[260px] flex-col bg-[#0b1d41] text-white lg:flex">
+      <aside className="hidden">
 
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-6">

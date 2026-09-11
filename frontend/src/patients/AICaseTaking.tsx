@@ -1,7 +1,13 @@
 export {};
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError, askCaseAI, createCase, generateCaseSummary, getCase, selectCaseLanguage, type ConversationMessage } from "../services/api";
+=======
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import SharedSidebar from "../components/Sidebar";
+>>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 
 function Icon({
   name,
@@ -178,6 +184,7 @@ function SidebarItem({
   );
 }
 
+<<<<<<< HEAD
 function Sidebar() {
   const navigate = useNavigate();
   const goTo = (path: string) => navigate(path);
@@ -217,6 +224,8 @@ function Sidebar() {
   );
 }
 
+=======
+>>>>>>> 929a001c34478e23a80f8a924cfb852e8d42c6bc
 function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-10 flex h-[80px] items-center justify-between border-b border-[#dce3ed] bg-white px-4 sm:px-6 lg:left-[260px] lg:right-0 lg:px-10">
@@ -409,7 +418,7 @@ export default function AICaseTaking() {
         <button type="button" onClick={() => setMobileMenuOpen(true)} className="rounded-lg p-2 text-white" aria-label="Open menu">☰</button>
       </div>
 
-      {mobileMenuOpen && (
+      {false && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="absolute inset-0 bg-black/40" />
           <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-[#0b1d40] px-6 py-6 text-white shadow-2xl">
@@ -427,7 +436,7 @@ export default function AICaseTaking() {
       )}
 
     <div className="min-h-screen bg-[#f7f9fc] font-['Outfit',sans-serif] text-[#102349]">
-      <Sidebar />
+      <SharedSidebar role="patient" />
 
       <Header />
 
