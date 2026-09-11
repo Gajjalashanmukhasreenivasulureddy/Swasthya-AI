@@ -284,6 +284,13 @@ function CaseReview() {
 
               </div>
 
+              <div className="rounded-[11px] border border-[#dce3ed] bg-white p-6">
+                <h3 className="text-[17px] font-extrabold">Clinical review prompts</h3>
+                <SummaryList label="Possible considerations" values={summary.possibleConsiderations} empty="Clinical evaluation is required." />
+                <SummaryList label="Red flags" values={summary.redFlags} empty="No red flags were identified from the information provided." />
+                <SummaryList label="Recommended follow-up" values={summary.followUpQuestions} empty="A clinician may ask follow-up questions during review." />
+              </div>
+
 
               {/* Submit / Draft */}
               <div className="space-y-3">
@@ -404,6 +411,18 @@ function Tag({
     <span className="rounded-[4px] border border-[#d2e1ea] bg-white px-2 py-1 text-[10px] font-semibold text-[#0f9d92]">
       {text}
     </span>
+  );
+}
+
+function SummaryList({ label, values, empty }: { label: string; values: unknown; empty: string }) {
+  const items = Array.isArray(values) ? values.filter((value): value is string => typeof value === "string" && value.trim().length > 0) : [];
+  return (
+    <div className="mt-4 first:mt-0">
+      <p className="text-[11px] font-bold uppercase tracking-wide text-[#71809a]">{label}</p>
+      <ul className="mt-2 space-y-1 text-[13px] leading-5 text-[#172c50]">
+        {(items.length ? items : [empty]).map((item) => <li key={item}>• {item}</li>)}
+      </ul>
+    </div>
   );
 }
 

@@ -109,8 +109,9 @@ export type AISummary = {
 	followUpQuestions: string[];
 	clinicalObservations: string[];
 	possibleConsiderations: string[];
-	suggestedNextSteps: string[];
-	urgency: "normal" | "urgent" | "unknown";
+  suggestedNextSteps: string[];
+  urgency: "normal" | "urgent" | "unknown";
+  summary: string;
 };
 
 type ApiResponse<T> = {

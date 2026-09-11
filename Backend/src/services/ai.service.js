@@ -22,12 +22,6 @@ class GeminiServiceError extends Error {
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Gemini Client
-|--------------------------------------------------------------------------
-*/
-
 function getClient() {
   const apiKey = env.geminiApiKey || process.env.GEMINI_API_KEY;
 
@@ -38,16 +32,8 @@ function getClient() {
     );
   }
 
-  return new GoogleGenAI({
-    apiKey,
-  });
+  return new GoogleGenAI({ apiKey });
 }
-
-/*
-|--------------------------------------------------------------------------
-| Supported Languages
-|--------------------------------------------------------------------------
-*/
 
 const SUPPORTED_LANGUAGES = [
   "english",
@@ -63,69 +49,292 @@ const SUPPORTED_LANGUAGES = [
   "urdu",
 ];
 
-/*
-|--------------------------------------------------------------------------
-| Detect Language From First Answer
-|--------------------------------------------------------------------------
-*/
-
 function detectLanguage(text) {
   if (!text || typeof text !== "string") return null;
 
   const value = text.trim().toLowerCase();
 
-  for (const language of SUPPORTED_LANGUAGES) {
-    if (value === language) return language;
+  if (SUPPORTED_LANGUAGES.includes(value)) {
+    return value;
   }
 
   const aliases = {
     "हिंदी": "hindi",
     "हिन्दी": "hindi",
-    "bangla": "bengali",
-    "বাংলা": "bengali",
-    "தமிழ்": "tamil",
-    "తెలుగు": "telugu",
-    "मराठी": "marathi",
-    "ગુજરાતી": "gujarati",
-    "ಕನ್ನಡ": "kannada",
-    "മലയാളം": "malayalam",
-    "ਪੰਜਾਬੀ": "punjabi",
-    "اردو": "urdu",
+    bangla: "bengali",
+    বাংলা: "bengali",
+    தமிழ்: "tamil",
+    తెలుగు: "telugu",
+    मराठी: "marathi",
+    ગુજરાતી: "gujarati",
+    ಕನ್ನಡ: "kannada",
+    മലയാളം: "malayalam",
+    ਪੰਜਾਬੀ: "punjabi",
+    اردو: "urdu",
   };
 
   return aliases[value] || null;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Conversation Normalization
-|--------------------------------------------------------------------------
-*/
+function getMessageText(item) {
+  if (!item) return "";
+
+  if (typeof item.message === "string") {
+    return item.message.trim();
+  }
+
+  if (typeof item.content === "string") {
+    return item.content.trim();
+  }
+
+  return "";
+}
+
+function getSender(item) {
+  return String(
+    item?.sender_type ||
+      item?.sender ||
+      item?.role ||
+      ""
+  ).toLowerCase();
+}
 
 function conversationContext(conversation) {
   if (!Array.isArray(conversation)) return [];
 
   return conversation.slice(-30).map((item) => ({
-    sender:
-      item.sender_type ||
-      item.sender ||
-      item.role ||
-      "unknown",
-
-    message:
-      typeof item.message === "string"
-        ? item.message.slice(0, 3000)
-        : typeof item.content === "string"
-        ? item.content.slice(0, 3000)
-        : "",
+    sender: getSender(item) || "unknown",
+    message: getMessageText(item).slice(0, 3000),
   }));
 }
 
-/*
-|--------------------------------------------------------------------------
-| JSON Parser
-|--------------------------------------------------------------------------
-*/
+function getLastUserMessage(conversation) {
+  if (!Array.isArray(conversation)) return "";
+
+  for (let i = conversation.length - 1; i >= 0; i--) {
+    const sender = getSender(conversation[i]);
+
+    if (
+      sender === "user" ||
+      sender === "patient" ||
+      sender === "human"
+    ) {
+      const message = getMessageText(conversation[i]);
+
+      if (message) return message;
+    }
+  }
+
+  return "";
+}
+
+function getLastAssistantMessage(conversation) {
+  if (!Array.isArray(conversation)) return "";
+
+  for (let i = conversation.length - 1; i >= 0; i--) {
+    const sender = getSender(conversation[i]);
+
+    if (
+      sender === "assistant" ||
+      sender === "ai" ||
+      sender === "bot"
+    ) {
+      const message = getMessageText(conversation[i]);
+
+      if (message) return message;
+    }
+  }
+
+  return "";
+}
+
+function extractComplaint(conversation, caseData = {}) {
+  const existing =
+    caseData.chiefComplaint ||
+    caseData.complaint ||
+    caseData.chief_complaint;
+
+  if (
+    typeof existing === "string" &&
+    existing.trim()
+  ) {
+    return existing.trim();
+  }
+
+  if (!Array.isArray(conversation)) {
+    return null;
+  }
+
+  /*
+   * Look for the patient's answer after the assistant asks
+   * "What problem are you experiencing?"
+   */
+  for (let i = 0; i < conversation.length; i++) {
+    const assistantText = getMessageText(conversation[i])
+      .toLowerCase();
+
+    if (
+      getSender(conversation[i]) === "assistant" &&
+      (
+        assistantText.includes("what problem") ||
+        assistantText.includes("experiencing")
+      )
+    ) {
+      const next = conversation[i + 1];
+
+      if (
+        next &&
+        (
+          getSender(next) === "user" ||
+          getSender(next) === "patient" ||
+          getSender(next) === "human"
+        )
+      ) {
+        const answer = getMessageText(next);
+
+        if (
+          answer &&
+          !detectLanguage(answer)
+        ) {
+          return answer;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function isLanguageQuestion(question) {
+  if (typeof question !== "string") return false;
+
+  const value = question
+    .toLowerCase()
+    .replace(/[?!.]/g, "");
+
+  return (
+    value.includes("which language") ||
+    value.includes("what language") ||
+    value.includes("language would you like") ||
+    value.includes("preferred language")
+  );
+}
+
+function normalizeQuestion(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function wasAlreadyAsked(question, conversation) {
+  if (!question || !Array.isArray(conversation)) {
+    return false;
+  }
+
+  const target = normalizeQuestion(question);
+
+  return conversation.some((item) => {
+    const sender = getSender(item);
+
+    if (
+      sender !== "assistant" &&
+      sender !== "ai" &&
+      sender !== "bot"
+    ) {
+      return false;
+    }
+
+    return normalizeQuestion(
+      getMessageText(item)
+    ) === target;
+  });
+}
+
+function fallbackQuestion(chiefComplaint) {
+  const complaint = String(
+    chiefComplaint || ""
+  ).toLowerCase();
+
+  if (/fever|temperature|febrile/.test(complaint)) {
+    return "How long have you had the fever, and what was the highest temperature you measured?";
+  }
+
+  if (/cough|cold/.test(complaint)) {
+    return "How long have you had the cough, and is it dry or producing sputum?";
+  }
+
+  if (/headache|migraine|head pain/.test(complaint)) {
+    return "When did the headache start, and how severe is it?";
+  }
+
+  if (
+    /stomach|abdominal|abdomen|belly/.test(
+      complaint
+    )
+  ) {
+    return "When did the abdominal pain start, and where exactly do you feel it?";
+  }
+
+  if (
+    /chest pain|chest tightness/.test(
+      complaint
+    )
+  ) {
+    return "When did the chest pain start, and how severe is it?";
+  }
+
+  if (
+    /breathing|breath|shortness of breath/.test(
+      complaint
+    )
+  ) {
+    return "When did the breathing difficulty start, and is it getting worse?";
+  }
+
+  if (
+    /rash|itch|skin|patch/.test(
+      complaint
+    )
+  ) {
+    return "When did the skin problem start, and has it been spreading or changing?";
+  }
+
+  if (
+    /vomit|vomiting|nausea/.test(
+      complaint
+    )
+  ) {
+    return "When did the nausea or vomiting start, and how often is it happening?";
+  }
+
+  if (
+    /diarrhea|loose motion/.test(
+      complaint
+    )
+  ) {
+    return "When did the diarrhea start, and how many times have you had it today?";
+  }
+
+  if (
+    /dizz|vertigo|gidd/.test(
+      complaint
+    )
+  ) {
+    return "When did the dizziness start, and does it happen continuously or in episodes?";
+  }
+
+  if (
+    /urine|urinary|urination|pee/.test(
+      complaint
+    )
+  ) {
+    return "When did the urinary symptoms start, and are you having any pain or fever?";
+  }
+
+  return "When did this problem start, and how has it changed since then?";
+}
 
 function parseJson(value) {
   if (typeof value !== "string") {
@@ -135,9 +344,8 @@ function parseJson(value) {
     );
   }
 
-  let text = value.trim();
-
-  text = text
+  let text = value
+    .trim()
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "")
@@ -146,7 +354,10 @@ function parseJson(value) {
   try {
     return JSON.parse(text);
   } catch (error) {
-    console.error("Gemini returned invalid JSON:", text);
+    console.error(
+      "Invalid Gemini JSON:",
+      text
+    );
 
     throw new GeminiServiceError(
       "AI_INVALID_RESPONSE",
@@ -155,18 +366,9 @@ function parseJson(value) {
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Progress
-|--------------------------------------------------------------------------
-|
-| IMPORTANT:
-| Current section is NOT automatically considered completed.
-| A section becomes completed only when Gemini says so.
-|--------------------------------------------------------------------------
-*/
-
-function calculateProgress(completedSections = []) {
+function calculateProgress(
+  completedSections = []
+) {
   const completed = new Set(
     Array.isArray(completedSections)
       ? completedSections.filter((section) =>
@@ -177,15 +379,11 @@ function calculateProgress(completedSections = []) {
 
   return Math.min(
     100,
-    Math.round((completed.size / sections.length) * 100)
+    Math.round(
+      (completed.size / sections.length) * 100
+    )
   );
 }
-
-/*
-|--------------------------------------------------------------------------
-| Normalize Gemini Result
-|--------------------------------------------------------------------------
-*/
 
 function normalizeResult(result, caseData) {
   if (
@@ -199,44 +397,36 @@ function normalizeResult(result, caseData) {
     );
   }
 
-  const currentSection = sections.includes(
-    result.currentSection
-  )
-    ? result.currentSection
-    : "Chief Complaint";
-
-  const completedSections = Array.isArray(
-    result.completedSections
-  )
-    ? result.completedSections.filter((section) =>
-        sections.includes(section)
-      )
-    : [];
-
   const question =
     result.nextQuestion ||
     result.question ||
     null;
 
-  if (
-    question !== null &&
-    (typeof question !== "string" ||
-      !question.trim())
-  ) {
-    throw new GeminiServiceError(
-      "AI_INVALID_RESPONSE",
-      "Gemini returned an invalid question"
-    );
-  }
+  const completedSections =
+    Array.isArray(result.completedSections)
+      ? result.completedSections.filter((section) =>
+          sections.includes(section)
+        )
+      : [];
+
+  const currentSection =
+    sections.includes(result.currentSection)
+      ? result.currentSection
+      : "Chief Complaint";
 
   return {
-    nextQuestion: question,
+    nextQuestion:
+      typeof question === "string" &&
+      question.trim()
+        ? question.trim()
+        : null,
 
-    informationCollected:
-      result.informationCollected ||
-      result.caseData ||
-      caseData ||
-      {},
+    informationCollected: {
+      ...(caseData || {}),
+      ...(result.informationCollected ||
+        result.caseData ||
+        {}),
+    },
 
     missingInformation:
       Array.isArray(result.missingInformation)
@@ -251,68 +441,68 @@ function normalizeResult(result, caseData) {
 
     urgency:
       result.urgency ||
-      (Array.isArray(result.redFlags) &&
-      result.redFlags.length
-        ? "urgent"
-        : "unknown"),
+      (
+        Array.isArray(result.redFlags) &&
+        result.redFlags.length
+          ? "urgent"
+          : "normal"
+      ),
 
     currentSection,
 
     completedSections,
 
-    progress: calculateProgress(
-      completedSections
-    ),
+    progress:
+      calculateProgress(
+        completedSections
+      ),
 
-    redFlags: Array.isArray(result.redFlags)
-      ? result.redFlags
-      : [],
+    redFlags:
+      Array.isArray(result.redFlags)
+        ? result.redFlags
+        : [],
   };
 }
 
-/*
-|--------------------------------------------------------------------------
-| Gemini JSON Request
-|--------------------------------------------------------------------------
-*/
-
 async function generateJson(prompt) {
   try {
-    const client = getClient();
+    const response = await getClient().models.generateContent({
+      // IMPORTANT: use a real/current Gemini model
+      model:
+        process.env.GEMINI_MODEL ||
+        "gemini-2.5-flash",
 
-    const response =
-      await client.models.generateContent({
-        model:
-          env.geminiModel ||
-          process.env.GEMINI_MODEL ||
-          "gemini-3.6-flash",
+      contents: prompt,
 
-        contents: prompt,
-
-        config: {
-          temperature: 0.2,
-          responseMimeType: "application/json",
-        },
-      });
+      config: {
+        temperature: 0.1,
+        responseMimeType: "application/json",
+      },
+    });
 
     const text =
       typeof response.text === "function"
         ? response.text()
         : response.text;
 
+    if (!text || !String(text).trim()) {
+      throw new GeminiServiceError(
+        "AI_INVALID_RESPONSE",
+        "Gemini returned an empty response"
+      );
+    }
+
     return parseJson(text);
+
   } catch (error) {
+    console.error(
+      "Gemini request failed:",
+      error?.message || error
+    );
+
     if (error instanceof GeminiServiceError) {
       throw error;
     }
-
-    console.error(
-      "Gemini provider error:",
-      error.status ||
-        error.code ||
-        "unknown",
-      error.message
-    );
 
     throw new GeminiServiceError(
       "AI_UNAVAILABLE",
@@ -321,151 +511,80 @@ async function generateJson(prompt) {
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Medical AI Prompt
-|--------------------------------------------------------------------------
-*/
-
 function medicalPrompt(
   caseData,
   conversation,
   preferredLanguage
 ) {
   return `
-You are Swasthya, an AI-assisted medical history-taking assistant used by a doctor.
+You are Swasthya, an AI-assisted medical
+history-taking assistant used by a doctor.
 
-Your ONLY purpose is to collect structured medical history.
+Your job is ONLY to collect and structure
+medical history.
 
 You are NOT an autonomous doctor.
 
-DO NOT:
-- diagnose the patient
-- prescribe medication
+NEVER:
+- diagnose with certainty
+- prescribe medicine
 - recommend dosages
-- claim certainty
 - invent patient information
 
-==================================================
-LANGUAGE
-==================================================
+PATIENT LANGUAGE:
+${preferredLanguage}
 
-The patient's preferred language is:
+CURRENT CASE:
+${JSON.stringify(caseData)}
 
-${preferredLanguage || "English"}
-
-IMPORTANT:
-
-Medical reasoning is language-independent.
-
-The patient's answers may be:
-- English
-- Roman Hindi
-- Hinglish
-- another Indian language
-- mixed language
-
-Understand the meaning regardless of language.
-
-The final question you generate should be a clear neutral question.
-The backend will translate it using the multilingual service.
-
-DO NOT generate Devanagari or another native script yourself.
-
-==================================================
-CASE TAKING
-==================================================
-
-Never assume the patient has cough.
-
-Determine the actual complaint from the conversation.
-
-The patient could have:
-- fever
-- cough
-- headache
-- abdominal pain
-- chest pain
-- vomiting
-- diarrhea
-- dizziness
-- weakness
-- breathing difficulty
-- skin complaints
-- urinary complaints
-- injuries
-- multiple complaints
-- any other health problem
-
-Ask exactly ONE relevant follow-up question at a time.
-
-Do not repeat information already provided.
-
-Questions should be focused and understandable.
-
-==================================================
-FIRST MEDICAL QUESTION
-==================================================
-
-After the language has been selected, the first medical question MUST be:
-
-"What problem are you experiencing?"
-
-==================================================
-CASE SECTIONS
-==================================================
-
-Use these sections:
-
-${JSON.stringify(sections)}
-
-Move between sections based on the actual information collected.
-
-Do not mark a section complete merely because it is the current section.
-
-A section is completed only when enough relevant information has been collected.
-
-==================================================
-RED FLAGS
-==================================================
-
-If the patient mentions potentially urgent symptoms, include them in redFlags.
-
-Examples:
-- severe chest pain
-- severe breathing difficulty
-- loss of consciousness
-- seizure
-- severe bleeding
-- sudden neurological symptoms
-- severe allergic reaction
-
-Do not diagnose the emergency condition.
-
-==================================================
-CURRENT CASE
-==================================================
-
-Case data:
-
-${JSON.stringify(caseData || {})}
-
-==================================================
-CONVERSATION
-==================================================
-
+CONVERSATION:
 ${JSON.stringify(
   conversationContext(conversation)
 )}
 
-==================================================
-RETURN ONLY JSON
-==================================================
+IMPORTANT RULES:
 
-Use exactly this structure:
+1. NEVER assume the complaint is cough.
+
+2. The patient can have ANY complaint:
+fever, cough, headache, stomach pain,
+chest pain, rash, vomiting, diarrhea,
+dizziness, weakness, urinary problems,
+breathing problems, injuries, or anything else.
+
+3. Use information already provided.
+
+4. NEVER ask for information the patient
+has already provided.
+
+5. Ask ONLY ONE question at a time.
+
+6. NEVER ask the language question again.
+The preferred language is already:
+
+${preferredLanguage}
+
+7. The patient's latest answer is the most
+important new information.
+
+8. Determine the next useful piece of medical
+history to collect.
+
+9. If the patient's complaint is known,
+continue with relevant questions about:
+duration, severity, associated symptoms,
+medical history, medications, allergies,
+and relevant red flags.
+
+10. If an urgent red flag appears, include it
+in redFlags.
+
+11. Do not diagnose the red flag.
+
+RETURN ONLY JSON:
 
 {
-  "nextQuestion": "one question or null",
+  "nextQuestion": "one question",
   "informationCollected": {},
   "missingInformation": [],
   "isComplete": false,
@@ -474,69 +593,40 @@ Use exactly this structure:
   "completedSections": [],
   "redFlags": []
 }
-
-Do not include markdown.
-Do not include explanations outside JSON.
 `;
 }
-
-/*
-|--------------------------------------------------------------------------
-| MAIN: Generate Next Question
-|--------------------------------------------------------------------------
-*/
 
 async function generateNextQuestion(
   caseData = {},
   conversation = []
 ) {
-  /*
-   * Support language stored in multiple possible places.
-   */
-
   let preferredLanguage =
     caseData.preferredLanguage ||
     caseData.language ||
     null;
 
   /*
-   * ---------------------------------------------------------------
-   * LANGUAGE SELECTION
-   * ---------------------------------------------------------------
-   *
-   * If no language exists yet, ask the language question.
+   * STEP 1
+   * Recover language from conversation.
    */
-
   if (!preferredLanguage) {
-    const lastMessage =
-      Array.isArray(conversation) &&
-      conversation.length
-        ? conversation[conversation.length - 1]
-        : null;
-
-    const possibleLanguage =
-      lastMessage?.message ||
-      lastMessage?.content ||
-      null;
-
-    const detected =
-      detectLanguage(possibleLanguage);
-
-    if (detected) {
-      preferredLanguage = detected;
-    }
+    preferredLanguage =
+      detectLanguage(
+        getLastUserMessage(conversation)
+      );
   }
 
   /*
-   * If still no language, ask language question.
+   * STEP 2
+   * No language yet = ask once.
    */
-
   if (!preferredLanguage) {
     return {
       nextQuestion:
         "Which language would you like to continue in?",
 
-      informationCollected: caseData,
+      informationCollected:
+        caseData,
 
       missingInformation: [
         "preferredLanguage",
@@ -559,81 +649,71 @@ async function generateNextQuestion(
     };
   }
 
-  /*
-   * ---------------------------------------------------------------
-   * NORMALIZE LANGUAGE
-   * ---------------------------------------------------------------
-   */
-
   preferredLanguage =
-    preferredLanguage
-      .toString()
+    String(preferredLanguage)
       .trim()
       .toLowerCase();
 
   /*
-   * ---------------------------------------------------------------
-   * FIRST MEDICAL QUESTION
-   * ---------------------------------------------------------------
+   * STEP 3
+   * Recover complaint from conversation.
    *
-   * If the only thing we know is the language,
-   * ask the patient's main problem.
+   * This is the important fix.
    */
-
-  const hasMedicalConversation =
-    Array.isArray(conversation) &&
-    conversation.some(
-      (item) => {
-        const message =
-          item?.message ||
-          item?.content ||
-          "";
-
-        return (
-          typeof message === "string" &&
-          message.trim().length > 0 &&
-          !detectLanguage(message)
-        );
-      }
+  const recoveredComplaint =
+    extractComplaint(
+      conversation,
+      caseData
     );
 
-  if (
-    !hasMedicalConversation &&
+  const effectiveCaseData = {
+    ...(caseData || {}),
+    preferredLanguage,
+
+    ...(recoveredComplaint &&
     !caseData.chiefComplaint &&
     !caseData.complaint
+      ? {
+          chiefComplaint:
+            recoveredComplaint,
+        }
+      : {}),
+  };
+
+  /*
+   * STEP 4
+   * If language exists but complaint
+   * does not exist, ask the complaint question.
+   */
+  if (
+    !effectiveCaseData.chiefComplaint &&
+    !effectiveCaseData.complaint
   ) {
-    const englishQuestion =
+    const question =
       "What problem are you experiencing?";
 
     let translatedQuestion =
-      englishQuestion;
+      question;
 
     try {
       translatedQuestion =
         await translateQuestion(
-          englishQuestion,
+          question,
           preferredLanguage
         );
     } catch (error) {
       console.error(
-        "Initial translation failed:",
+        "Translation error:",
         error.message
       );
-
-      /*
-       * Hindi has a fallback inside multilingual.service.js.
-       * For other languages, keep the English question
-       * instead of crashing the case.
-       */
     }
 
     return {
-      nextQuestion: translatedQuestion,
+      nextQuestion:
+        translatedQuestion,
 
-      informationCollected: {
-        ...caseData,
-        preferredLanguage,
-      },
+      informationCollected:
+        effectiveCaseData,
 
       missingInformation: [
         "chiefComplaint",
@@ -657,33 +737,66 @@ async function generateNextQuestion(
   }
 
   /*
-   * ---------------------------------------------------------------
-   * GEMINI MEDICAL REASONING
-   * ---------------------------------------------------------------
+   * STEP 5
+   * Gemini now receives the COMPLETE
+   * current state and conversation.
    */
+  const result =
+    await generateJson(
+      medicalPrompt(
+        effectiveCaseData,
+        conversation,
+        preferredLanguage
+      )
+    );
 
-  const result = await generateJson(
-    medicalPrompt(
-      {
-        ...caseData,
-        preferredLanguage,
-      },
-      conversation,
-      preferredLanguage
-    )
-  );
-
-  const normalized = normalizeResult(
-    result,
-    caseData
-  );
+  const normalized =
+    normalizeResult(
+      result,
+      effectiveCaseData
+    );
 
   /*
-   * ---------------------------------------------------------------
-   * TRANSLATE GEMINI QUESTION
-   * ---------------------------------------------------------------
+   * STEP 6
+   * HARD SAFETY GUARD:
+   * Gemini is NEVER allowed to return
+   * the language question after language
+   * has already been selected.
    */
+  if (
+    isLanguageQuestion(
+      normalized.nextQuestion
+    )
+  ) {
+    normalized.nextQuestion =
+      fallbackQuestion(
+        effectiveCaseData.chiefComplaint ||
+          effectiveCaseData.complaint
+      );
+  }
 
+  /*
+   * STEP 7
+   * Prevent duplicate questions.
+   */
+  if (
+    normalized.nextQuestion &&
+    wasAlreadyAsked(
+      normalized.nextQuestion,
+      conversation
+    )
+  ) {
+    normalized.nextQuestion =
+      fallbackQuestion(
+        effectiveCaseData.chiefComplaint ||
+          effectiveCaseData.complaint
+      );
+  }
+
+  /*
+   * STEP 8
+   * Translate the final question.
+   */
   if (normalized.nextQuestion) {
     try {
       normalized.nextQuestion =
@@ -692,54 +805,47 @@ async function generateNextQuestion(
           preferredLanguage
         );
     } catch (error) {
-      /*
-       * Don't kill the medical case if translation
-       * temporarily fails.
-       */
-
       console.error(
-        "Question translation failed:",
+        "Question translation error:",
         error.message
       );
-
-      if (
-        error instanceof MultilingualServiceError
-      ) {
-        /*
-         * Keep the original question.
-         */
-      }
     }
   }
 
   return {
     ...normalized,
+
+    informationCollected: {
+      ...effectiveCaseData,
+      ...(normalized.informationCollected ||
+        {}),
+    },
+
     preferredLanguage,
   };
 }
-
-/*
-|--------------------------------------------------------------------------
-| Case Summary
-|--------------------------------------------------------------------------
-*/
 
 async function generateCaseSummary(
   caseData = {},
   conversation = []
 ) {
   const prompt = `
-You are preparing a concise structured medical history
-for a doctor.
+You are preparing a structured medical
+history for a doctor.
 
-Understand patient answers regardless of language.
+Do NOT diagnose.
+Do NOT prescribe.
+Do NOT invent information.
 
-Do NOT:
-- diagnose
-- prescribe
-- invent information
+CASE:
+${JSON.stringify(caseData)}
 
-Return JSON ONLY:
+CONVERSATION:
+${JSON.stringify(
+  conversationContext(conversation)
+)}
+
+RETURN ONLY JSON:
 
 {
   "chiefComplaint": null,
@@ -757,21 +863,13 @@ Return JSON ONLY:
   "clinicalObservations": [],
   "possibleConsiderations": [],
   "suggestedNextSteps": [],
-  "urgency": "normal"
+  "urgency": "normal",
+  "summary": null
 }
-
-CASE:
-
-${JSON.stringify(caseData)}
-
-CONVERSATION:
-
-${JSON.stringify(
-  conversationContext(conversation)
-)}
 `;
 
-  const result = await generateJson(prompt);
+  const result =
+    await generateJson(prompt);
 
   const arrayFields = [
     "symptoms",
@@ -795,10 +893,18 @@ ${JSON.stringify(
     }
   }
 
+  if (
+    typeof result.summary !== "string" ||
+    !result.summary.trim()
+  ) {
+    result.summary =
+      "A clinician should review the patient-reported information.";
+  }
+
   return {
     ...result,
     urgency:
-      result.urgency || "unknown",
+      result.urgency || "normal",
   };
 }
 

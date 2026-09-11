@@ -318,6 +318,20 @@ export default function AICaseTaking() {
     setMessage(text);
   };
 
+  const generateAndReviewCase = async (): Promise<void> => {
+    if (!caseId || loading) return;
+
+    setLoading(true);
+    try {
+      await generateCaseSummary(caseId);
+      navigate("/patient/case-review");
+    } catch (error) {
+      alert(error instanceof ApiError ? error.message : "Unable to generate the case summary. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const submitMessage = async (): Promise<void> => {
     const answer = message.trim();
     if (!answer || loading) return;
@@ -479,7 +493,11 @@ export default function AICaseTaking() {
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") void submitMessage();
+                    }}
                     placeholder="Type your medical description..."
+                    disabled={loading}
                     className="h-[50px] flex-1 rounded-lg border border-[#dce3ed] bg-[#f9fafc] px-4 text-[15px] text-[#102349] outline-none placeholder:text-[#71819c] focus:border-[#0d9f94]"
                   />
 
@@ -493,11 +511,22 @@ export default function AICaseTaking() {
                   <button
                     type="button"
                     onClick={submitMessage}
+                    disabled={loading || !message.trim()}
                     className="h-[50px] rounded-lg bg-[#0b1d40] px-7 text-[14px] font-extrabold text-white"
                   >
-                    Submit
+                    {loading ? "AI is analyzing..." : "Submit"}
                   </button>
                 </div>
+                {caseId && (
+                  <button
+                    type="button"
+                    onClick={generateAndReviewCase}
+                    disabled={loading}
+                    className="mt-4 w-full rounded-lg border border-[#0d9f94] px-4 py-3 text-[14px] font-extrabold text-[#0d8f86] transition hover:bg-[#edfafa] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading ? "AI is analyzing..." : "Generate & review case summary"}
+                  </button>
+                )}
               </div>
             </section>
 
